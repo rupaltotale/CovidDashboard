@@ -6,6 +6,7 @@ import {
   VictoryAxis,
   VictoryTheme,
   VictoryStack,
+  VictoryLine
 } from 'victory';
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
@@ -93,6 +94,17 @@ const HomePage: React.FC = () => {
           </VictoryStack>
         </VictoryChart>
       </div>
+      <VictoryChart>
+          <VictoryLine
+            data={[
+              { x: 1, y: 2 },
+              { x: 2, y: 3 },
+              { x: 3, y: 5 },
+              { x: 4, y: 4 },
+              { x: 5, y: 6 }
+            ]}
+          />
+        </VictoryChart>
       <div className={classes.leaflet}>
         <Map center={position} zoom={2} style={{ height: '100%' }}>
           <TileLayer
