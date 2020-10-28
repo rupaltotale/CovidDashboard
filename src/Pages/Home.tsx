@@ -1,13 +1,20 @@
 //React Imports
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   VictoryBar,
   VictoryChart,
   VictoryAxis,
+  VictoryGroup,
   VictoryTheme,
   VictoryStack,
-  VictoryLine
+  VictoryLine,
+  VictoryLabel,
+  VictoryZoomContainer,
+  VictoryVoronoiContainer,
+  VictoryLegend,
 } from 'victory';
+import { csv, DSVRowArray } from 'd3';
+
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
@@ -21,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 'auto',
   },
   chart: {
-    height: '400px',
+    height: '750px',
   },
   leaflet: {
     height: '400px',
@@ -45,66 +52,171 @@ const Markers: React.FC = () => {
   });
   return <div>{markers}</div>;
 };
+const getTotalDeathsByState = (data: any) => {
+  const newData = data
+    .slice(0, 51)
+    .map((row: any) => {
+      if (!isNaN(parseInt(row.Deaths_Total))) {
+        return { state: row.State, total: parseInt(row.Deaths_Total) / 1000 };
+      }
+      return { state: row.State, total: 0 };
+    })
+    .sort((a: any, b: any) => b.total - a.total)
+    .slice(0, 10);
+  return newData;
+};
+const getTotalCasesPerState = (data: any) => {
+  const newData = data
+    .slice(0, 51)
+    .map((row: any) => {
+      if (!isNaN(parseInt(row.Cases_Total))) {
+        return { state: row.State, total: parseInt(row.Cases_Total) / 1000 };
+      }
+      return { state: row.State, total: 0 };
+    })
+    .sort((a: any, b: any) => b.total - a.total)
+    .slice(0, 10);
+  return newData;
+};
+
+const getTotalCasesForEthnicity = (data: any, ethnicity: any) => {
+  const newData = data
+    .slice(0, 51)
+    .sort((a: any, b: any) => b.Cases_Total - a.Cases_Total)
+    .slice(0, 10)
+    .map((row: any) => {
+      if (!isNaN(parseInt(row[`Cases_${ethnicity}`]))) {
+        return {
+          state: row.State,
+          total: parseInt(row[`Cases_${ethnicity}`]) / 1000,
+        };
+      }
+      return { state: row.State, total: 0 };
+    });
+  return newData;
+};
+type CSVData = DSVRowArray | null;
 const HomePage: React.FC = () => {
+  const initialState: CSVData = null;
+  const [fetchedCSVData, setFetchedCSVdata] = useState<CSVData>(initialState);
+  if (fetchedCSVData == null) {
+    csv(`${process.env.PUBLIC_URL}/covid-data.csv`).then((res) => {
+      setFetchedCSVdata(res);
+    });
+  }
   const classes = useStyles();
-  const data2012 = [
-    { quarter: 1, earnings: 13000 },
-    { quarter: 2, earnings: 16500 },
-    { quarter: 3, earnings: 14250 },
-    { quarter: 4, earnings: 19000 },
-  ];
-
-  const data2013 = [
-    { quarter: 1, earnings: 15000 },
-    { quarter: 2, earnings: 12500 },
-    { quarter: 3, earnings: 19500 },
-    { quarter: 4, earnings: 13000 },
-  ];
-
-  const data2014 = [
-    { quarter: 1, earnings: 11500 },
-    { quarter: 2, earnings: 13250 },
-    { quarter: 3, earnings: 20000 },
-    { quarter: 4, earnings: 15500 },
-  ];
-
-  const data2015 = [
-    { quarter: 1, earnings: 18000 },
-    { quarter: 2, earnings: 13250 },
-    { quarter: 3, earnings: 15000 },
-    { quarter: 4, earnings: 12000 },
-  ];
   const position: LatLng = new LatLng(51.505, -0.09);
 
   return (
     <div className={classes.home}>
       <Typography variant='h3'>COVID Dashboard</Typography>
       <div className={classes.chart}>
-        <VictoryChart domainPadding={20} theme={VictoryTheme.material}>
-          <VictoryAxis
-            tickValues={[1, 2, 3, 4]}
-            tickFormat={['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4']}
+        <VictoryChart
+          theme={VictoryTheme.material}
+          domainPadding={10}
+          containerComponent={
+            <VictoryVoronoiContainer
+              labels={({ datum }) => {
+                return `${datum.xName}, ${datum._y}`;
+              }}
+            />
+          }
+        >
+          <VictoryLabel
+            x={25}
+            y={24}
+            text='Number of total cases for top ten states (x 1000)'
           />
-          <VictoryAxis dependentAxis tickFormat={(x) => `$${x / 1000}k`} />
-          <VictoryStack colorScale={'warm'}>
-            <VictoryBar data={data2012} x='quarter' y='earnings' />
-            <VictoryBar data={data2013} x='quarter' y='earnings' />
-            <VictoryBar data={data2014} x='quarter' y='earnings' />
-            <VictoryBar data={data2015} x='quarter' y='earnings' />
-          </VictoryStack>
+          {fetchedCSVData && (
+            <VictoryBar
+              horizontal
+              data={getTotalCasesPerState(fetchedCSVData)}
+              x='state'
+              y='total'
+            ></VictoryBar>
+          )}
+        </VictoryChart>
+      </div>
+      <div className={classes.chart}>
+        <VictoryChart
+          domainPadding={20}
+          theme={VictoryTheme.material}
+          containerComponent={<VictoryZoomContainer />}
+        >
+          <VictoryLabel
+            x={25}
+            y={24}
+            text='Breakdown of total cases by race for top ten states (x 1000)'
+          />
+          {fetchedCSVData && (
+            <VictoryGroup
+              offset={5}
+              colorScale={'qualitative'}
+              theme={VictoryTheme.material}
+              horizontal
+            >
+              <VictoryBar
+                data={getTotalCasesForEthnicity(fetchedCSVData, 'White')}
+                x='state'
+                y='total'
+              />
+              <VictoryBar
+                data={getTotalCasesForEthnicity(fetchedCSVData, 'Black')}
+                x='state'
+                y='total'
+              />
+              <VictoryBar
+                data={getTotalCasesForEthnicity(fetchedCSVData, 'Asian')}
+                x='state'
+                y='total'
+              />
+              <VictoryBar
+                data={getTotalCasesForEthnicity(fetchedCSVData, 'AIAN')}
+                x='state'
+                y='total'
+              />
+            </VictoryGroup>
+          )}
+        </VictoryChart>
+      </div>
+      <div className={classes.chart}>
+        <VictoryChart
+          theme={VictoryTheme.material}
+          domainPadding={10}
+          containerComponent={
+            <VictoryVoronoiContainer
+              labels={({ datum }) => {
+                return `${datum.xName}, ${datum._y}`;
+              }}
+            />
+          }
+        >
+          <VictoryLabel
+            x={25}
+            y={24}
+            text='Number of total deaths for top ten states (x 1000)'
+          />
+          {fetchedCSVData && (
+            <VictoryBar
+              horizontal
+              data={getTotalDeathsByState(fetchedCSVData)}
+              x='state'
+              y='total'
+            ></VictoryBar>
+          )}
         </VictoryChart>
       </div>
       <VictoryChart>
-          <VictoryLine
-            data={[
-              { x: 1, y: 2 },
-              { x: 2, y: 3 },
-              { x: 3, y: 5 },
-              { x: 4, y: 4 },
-              { x: 5, y: 6 }
-            ]}
-          />
-        </VictoryChart>
+        <VictoryLine
+          data={[
+            { x: 1, y: 2 },
+            { x: 2, y: 3 },
+            { x: 3, y: 5 },
+            { x: 4, y: 4 },
+            { x: 5, y: 6 },
+          ]}
+        />
+      </VictoryChart>
       <div className={classes.leaflet}>
         <Map center={position} zoom={2} style={{ height: '100%' }}>
           <TileLayer
