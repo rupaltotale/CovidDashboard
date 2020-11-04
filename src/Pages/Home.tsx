@@ -17,7 +17,7 @@ import { csv, DSVRowArray } from 'd3';
 
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Typography } from '@material-ui/core';
+import { Button, Paper, Typography } from '@material-ui/core';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 import { LatLng } from 'leaflet';
 
@@ -28,27 +28,26 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 'auto',
   },
   chart: {
-    height: '750px',
+    height: '500px',
     width: 'wrap-content',
     margin: 'auto',
   },
   leaflet: {
     height: '400px',
     width: '100%',
-    margin: '10px',
+    margin: '20px',
   },
 }));
-const Markers: React.FC = () => {
-  const locations = [
-    [34.155834, -119.202789],
-    [42.933334, -76.566666],
-    [42.095554, -79.238609],
-    [38.846668, -91.948059],
-  ];
-  const markers = locations.map((loc: number[]) => {
+const Markers = ({ data }: { data: any }) => {
+  const markers = data.map((state: any) => {
     return (
-      <Marker position={new LatLng(loc[0], loc[1])} key={loc.toString()}>
-        <Popup>Major city in the US</Popup>
+      <Marker
+        position={new LatLng(state.latitude, state.longitude)}
+        key={state.state}
+      >
+        <Popup>
+          <Button variant='contained'>View more about {state.name}</Button>
+        </Popup>
       </Marker>
     );
   });
@@ -118,181 +117,250 @@ const getTotalDeathsForEthnicity = (data: any, ethnicity: any) => {
 type CSVData = DSVRowArray | null;
 const HomePage: React.FC = () => {
   const initialState: CSVData = null;
-  const [fetchedCSVData, setFetchedCSVdata] = useState<CSVData>(initialState);
-  if (fetchedCSVData == null) {
+  const [fetchedCovidData, setFetchedCovidData] = useState<CSVData>(
+    initialState
+  );
+  const [fetchedStateData, setFetchedStateData] = useState<CSVData>(
+    initialState
+  );
+
+  if (fetchedCovidData == null) {
     csv(`${process.env.PUBLIC_URL}/covid-data.csv`).then((res) => {
-      setFetchedCSVdata(res);
+      setFetchedCovidData(res);
+    });
+  }
+  if (fetchedStateData == null) {
+    csv(`${process.env.PUBLIC_URL}/state-data.csv`).then((res) => {
+      setFetchedStateData(res);
     });
   }
   const classes = useStyles();
-  const position: LatLng = new LatLng(51.505, -0.09);
+  const position: LatLng = new LatLng(41.5, -100.0);
 
   return (
     <div className={classes.home}>
-      <Typography variant='h3'>COVID Dashboard</Typography>
-      <div className={classes.chart}>
-        <VictoryChart
-          theme={VictoryTheme.material}
-          domainPadding={10}
-          containerComponent={
-            <VictoryVoronoiContainer
-              labels={({ datum }) => {
-                return `${datum.xName}, ${datum._y * 1000}`;
-              }}
-            />
-          }
+      <Typography variant='h3' style={{ margin: '15px' }}>
+        COVID Dashboard
+      </Typography>
+      <Paper
+        elevation={3}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          alignContent: 'center',
+        }}
+      >
+        <Typography
+          variant='h6'
+          color='textSecondary'
+          style={{ marginTop: '10px' }}
         >
-          <VictoryLabel
-            x={25}
-            y={24}
-            text='Number of total cases for top ten states (x 1000)'
-          />
-          {fetchedCSVData && (
-            <VictoryBar
-              horizontal
-              data={getTotalCasesPerState(fetchedCSVData)}
-              x='state'
-              y='total'
-            ></VictoryBar>
-          )}
-        </VictoryChart>
-      </div>
-      <div className={classes.chart}>
-        <VictoryChart
-          domainPadding={20}
-          theme={VictoryTheme.material}
-          containerComponent={
-            <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
-          }
-        >
-          <VictoryLabel
-            x={25}
-            y={24}
-            text='Breakdown of total cases by race for top ten states (x 1000)'
-          />
-          {fetchedCSVData && (
-            <VictoryGroup
-              offset={5}
-              colorScale={'qualitative'}
-              theme={VictoryTheme.material}
-              horizontal
+          Select one of the states on the map for state-specific visualizations
+        </Typography>
+        <div className={classes.leaflet}>
+          {fetchedStateData && (
+            <Map
+              center={position}
+              zoom={3}
+              style={{ height: '100%', width: '90%', margin: 'auto' }}
             >
-              <VictoryBar
-                data={getTotalCasesForEthnicity(fetchedCSVData, 'White')}
-                x='state'
-                y='total'
+              <TileLayer
+                url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
               />
-              <VictoryBar
-                data={getTotalCasesForEthnicity(fetchedCSVData, 'Black')}
-                x='state'
-                y='total'
-              />
-              <VictoryBar
-                data={getTotalCasesForEthnicity(fetchedCSVData, 'Asian')}
-                x='state'
-                y='total'
-              />
-              <VictoryBar
-                data={getTotalCasesForEthnicity(fetchedCSVData, 'AIAN')}
-                x='state'
-                y='total'
-              />
-            </VictoryGroup>
+              <Markers data={fetchedStateData} />
+            </Map>
           )}
-        </VictoryChart>
-      </div>
-      <div className={classes.chart}>
-        <VictoryChart
-          theme={VictoryTheme.material}
-          domainPadding={10}
-          containerComponent={
-            <VictoryVoronoiContainer
-              labels={({ datum }) => {
-                return `${datum.xName}, ${datum._y * 1000}`;
-              }}
-            />
-          }
+        </div>
+      </Paper>
+      <Paper style={{ marginBottom: '10px' }}>
+        <Typography
+          variant='h6'
+          color='textSecondary'
+          style={{ marginTop: '20px' }}
         >
-          <VictoryLabel
-            x={25}
-            y={24}
-            text='Number of total deaths for top ten states (x 1000)'
-          />
-          {fetchedCSVData && (
-            <VictoryBar
-              horizontal
-              data={getTotalDeathsByState(fetchedCSVData)}
-              x='state'
-              y='total'
-            ></VictoryBar>
-          )}
-        </VictoryChart>
-      </div>
+          Overview of COVID cases
+        </Typography>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Paper style={{ margin: '10px', width: '50%' }} variant='outlined'>
+            <div className={classes.chart}>
+              <VictoryChart
+                theme={VictoryTheme.material}
+                domainPadding={10}
+                containerComponent={
+                  <VictoryVoronoiContainer
+                    labels={({ datum }) => {
+                      return `${datum.xName}, ${datum._y * 1000}`;
+                    }}
+                  />
+                }
+              >
+                <VictoryLabel
+                  x={25}
+                  y={24}
+                  text='Number of total cases for top ten states (x 1000)'
+                />
+                {fetchedCovidData && (
+                  <VictoryBar
+                    horizontal
+                    data={getTotalCasesPerState(fetchedCovidData)}
+                    x='state'
+                    y='total'
+                  ></VictoryBar>
+                )}
+              </VictoryChart>
+            </div>
+            <div className={classes.chart}>
+              <VictoryChart
+                domainPadding={20}
+                theme={VictoryTheme.material}
+                containerComponent={
+                  <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
+                }
+              >
+                <VictoryLabel
+                  x={25}
+                  y={24}
+                  text='Breakdown of total cases by race for top ten states (x 1000)'
+                />
+                {fetchedCovidData && (
+                  <VictoryGroup
+                    offset={5}
+                    colorScale={'qualitative'}
+                    theme={VictoryTheme.material}
+                    horizontal
+                  >
+                    <VictoryBar
+                      data={getTotalCasesForEthnicity(
+                        fetchedCovidData,
+                        'White'
+                      )}
+                      x='state'
+                      y='total'
+                    />
+                    <VictoryBar
+                      data={getTotalCasesForEthnicity(
+                        fetchedCovidData,
+                        'Black'
+                      )}
+                      x='state'
+                      y='total'
+                    />
+                    <VictoryBar
+                      data={getTotalCasesForEthnicity(
+                        fetchedCovidData,
+                        'Asian'
+                      )}
+                      x='state'
+                      y='total'
+                    />
+                    <VictoryBar
+                      data={getTotalCasesForEthnicity(fetchedCovidData, 'AIAN')}
+                      x='state'
+                      y='total'
+                    />
+                  </VictoryGroup>
+                )}
+              </VictoryChart>
+            </div>
+          </Paper>
+          <Paper style={{ margin: '10px', width: '50%' }} variant='outlined'>
+            <div className={classes.chart}>
+              <VictoryChart
+                theme={VictoryTheme.material}
+                domainPadding={10}
+                containerComponent={
+                  <VictoryVoronoiContainer
+                    labels={({ datum }) => {
+                      return `${datum.xName}, ${datum._y * 1000}`;
+                    }}
+                  />
+                }
+              >
+                <VictoryLabel
+                  x={25}
+                  y={24}
+                  text='Number of total deaths for top ten states (x 1000)'
+                />
+                {fetchedCovidData && (
+                  <VictoryBar
+                    horizontal
+                    data={getTotalDeathsByState(fetchedCovidData)}
+                    x='state'
+                    y='total'
+                  ></VictoryBar>
+                )}
+              </VictoryChart>
+            </div>
 
-      <div className={classes.chart}>
-        <VictoryChart
-          domainPadding={20}
-          theme={VictoryTheme.material}
-          containerComponent={
-            <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
-          }
-        >
-          <VictoryLabel
-            x={25}
-            y={24}
-            text='Breakdown of total deaths by race for top ten states (x 1000)'
-          />
-          {fetchedCSVData && (
-            <VictoryGroup
-              offset={5}
-              colorScale={'qualitative'}
-              theme={VictoryTheme.material}
-              horizontal
-            >
-              <VictoryBar
-                data={getTotalDeathsForEthnicity(fetchedCSVData, 'White')}
-                x='state'
-                y='total'
-              />
-              <VictoryBar
-                data={getTotalDeathsForEthnicity(fetchedCSVData, 'Black')}
-                x='state'
-                y='total'
-              />
-              <VictoryBar
-                data={getTotalDeathsForEthnicity(fetchedCSVData, 'Asian')}
-                x='state'
-                y='total'
-              />
-              <VictoryBar
-                data={getTotalDeathsForEthnicity(fetchedCSVData, 'AIAN')}
-                x='state'
-                y='total'
-              />
-            </VictoryGroup>
-          )}
-        </VictoryChart>
-      </div>
-      {/* <VictoryChart>
-        <VictoryLine
-          data={[
-            { x: 1, y: 2 },
-            { x: 2, y: 3 },
-            { x: 3, y: 5 },
-            { x: 4, y: 4 },
-            { x: 5, y: 6 },
-          ]}
-        />
-      </VictoryChart> */}
-      <div className={classes.leaflet}>
-        <Map center={position} zoom={2} style={{ height: '100%' }}>
-          <TileLayer
-            url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <Markers />
-        </Map>
-      </div>
+            <div className={classes.chart}>
+              <VictoryChart
+                domainPadding={20}
+                theme={VictoryTheme.material}
+                containerComponent={
+                  <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
+                }
+              >
+                <VictoryLabel
+                  x={25}
+                  y={24}
+                  text='Breakdown of total deaths by race for top ten states (x 1000)'
+                />
+                {fetchedCovidData && (
+                  <VictoryGroup
+                    offset={5}
+                    colorScale={'qualitative'}
+                    theme={VictoryTheme.material}
+                    horizontal
+                  >
+                    <VictoryBar
+                      data={getTotalDeathsForEthnicity(
+                        fetchedCovidData,
+                        'White'
+                      )}
+                      x='state'
+                      y='total'
+                    />
+                    <VictoryBar
+                      data={getTotalDeathsForEthnicity(
+                        fetchedCovidData,
+                        'Black'
+                      )}
+                      x='state'
+                      y='total'
+                    />
+                    <VictoryBar
+                      data={getTotalDeathsForEthnicity(
+                        fetchedCovidData,
+                        'Asian'
+                      )}
+                      x='state'
+                      y='total'
+                    />
+                    <VictoryBar
+                      data={getTotalDeathsForEthnicity(
+                        fetchedCovidData,
+                        'AIAN'
+                      )}
+                      x='state'
+                      y='total'
+                    />
+                  </VictoryGroup>
+                )}
+              </VictoryChart>
+            </div>
+          </Paper>
+        </div>
+      </Paper>
     </div>
   );
 };
