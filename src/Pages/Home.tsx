@@ -29,6 +29,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   chart: {
     height: '750px',
+    width: 'wrap-content',
+    margin: 'auto',
   },
   leaflet: {
     height: '400px',
@@ -95,6 +97,24 @@ const getTotalCasesForEthnicity = (data: any, ethnicity: any) => {
     });
   return newData;
 };
+
+const getTotalDeathsForEthnicity = (data: any, ethnicity: any) => {
+  const newData = data
+    .slice(0, 51)
+    .sort((a: any, b: any) => b.Cases_Total - a.Cases_Total)
+    .slice(0, 10)
+    .map((row: any) => {
+      if (!isNaN(parseInt(row[`Deaths_${ethnicity}`]))) {
+        return {
+          state: row.State,
+          total: parseInt(row[`Deaths_${ethnicity}`]) / 1000,
+        };
+      }
+      return { state: row.State, total: 0 };
+    });
+  return newData;
+};
+
 type CSVData = DSVRowArray | null;
 const HomePage: React.FC = () => {
   const initialState: CSVData = null;
@@ -117,7 +137,7 @@ const HomePage: React.FC = () => {
           containerComponent={
             <VictoryVoronoiContainer
               labels={({ datum }) => {
-                return `${datum.xName}, ${datum._y}`;
+                return `${datum.xName}, ${datum._y * 1000}`;
               }}
             />
           }
@@ -141,7 +161,9 @@ const HomePage: React.FC = () => {
         <VictoryChart
           domainPadding={20}
           theme={VictoryTheme.material}
-          containerComponent={<VictoryZoomContainer />}
+          containerComponent={
+            <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
+          }
         >
           <VictoryLabel
             x={25}
@@ -186,7 +208,7 @@ const HomePage: React.FC = () => {
           containerComponent={
             <VictoryVoronoiContainer
               labels={({ datum }) => {
-                return `${datum.xName}, ${datum._y}`;
+                return `${datum.xName}, ${datum._y * 1000}`;
               }}
             />
           }
@@ -206,7 +228,52 @@ const HomePage: React.FC = () => {
           )}
         </VictoryChart>
       </div>
-      <VictoryChart>
+
+      <div className={classes.chart}>
+        <VictoryChart
+          domainPadding={20}
+          theme={VictoryTheme.material}
+          containerComponent={
+            <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
+          }
+        >
+          <VictoryLabel
+            x={25}
+            y={24}
+            text='Breakdown of total deaths by race for top ten states (x 1000)'
+          />
+          {fetchedCSVData && (
+            <VictoryGroup
+              offset={5}
+              colorScale={'qualitative'}
+              theme={VictoryTheme.material}
+              horizontal
+            >
+              <VictoryBar
+                data={getTotalDeathsForEthnicity(fetchedCSVData, 'White')}
+                x='state'
+                y='total'
+              />
+              <VictoryBar
+                data={getTotalDeathsForEthnicity(fetchedCSVData, 'Black')}
+                x='state'
+                y='total'
+              />
+              <VictoryBar
+                data={getTotalDeathsForEthnicity(fetchedCSVData, 'Asian')}
+                x='state'
+                y='total'
+              />
+              <VictoryBar
+                data={getTotalDeathsForEthnicity(fetchedCSVData, 'AIAN')}
+                x='state'
+                y='total'
+              />
+            </VictoryGroup>
+          )}
+        </VictoryChart>
+      </div>
+      {/* <VictoryChart>
         <VictoryLine
           data={[
             { x: 1, y: 2 },
@@ -216,7 +283,7 @@ const HomePage: React.FC = () => {
             { x: 5, y: 6 },
           ]}
         />
-      </VictoryChart>
+      </VictoryChart> */}
       <div className={classes.leaflet}>
         <Map center={position} zoom={2} style={{ height: '100%' }}>
           <TileLayer
