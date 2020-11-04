@@ -1,17 +1,13 @@
 //React Imports
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   VictoryBar,
   VictoryChart,
-  VictoryAxis,
   VictoryGroup,
   VictoryTheme,
-  VictoryStack,
-  VictoryLine,
   VictoryLabel,
   VictoryZoomContainer,
   VictoryVoronoiContainer,
-  VictoryLegend,
 } from 'victory';
 import { csv, DSVRowArray } from 'd3';
 
