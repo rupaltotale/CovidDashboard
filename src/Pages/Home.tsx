@@ -1,5 +1,5 @@
 //React Imports
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   VictoryBar,
   VictoryChart,
@@ -10,11 +10,12 @@ import {
   VictoryVoronoiContainer,
 } from 'victory';
 import { csv, DSVRowArray } from 'd3';
+import Markers, { State } from '../Components/Markers';
 
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Button, Paper, Typography } from '@material-ui/core';
-import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import { Paper, Typography } from '@material-ui/core';
+import { Map, TileLayer } from 'react-leaflet';
 import { LatLng } from 'leaflet';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -34,21 +35,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: '20px',
   },
 }));
-const Markers = ({ data }: { data: any }) => {
-  const markers = data.map((state: any) => {
-    return (
-      <Marker
-        position={new LatLng(state.latitude, state.longitude)}
-        key={state.state}
-      >
-        <Popup>
-          <Button variant='contained'>View more about {state.name}</Button>
-        </Popup>
-      </Marker>
-    );
-  });
-  return <div>{markers}</div>;
-};
+
 const getTotalDeathsByState = (data: any) => {
   const newData = data
     .slice(0, 51)
@@ -119,6 +106,15 @@ const HomePage: React.FC = () => {
   const [fetchedStateData, setFetchedStateData] = useState<CSVData>(
     initialState
   );
+  const [time, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    fetch('/time').then((res) =>
+      res.json().then((data) => {
+        setCurrentTime(data.time);
+      })
+    );
+  }, []);
 
   if (fetchedCovidData == null) {
     csv(`${process.env.PUBLIC_URL}/covid-data.csv`).then((res) => {
@@ -135,6 +131,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={classes.home}>
+      <p>The current time is {time}</p>
       <Typography variant='h3' style={{ margin: '15px' }}>
         COVID Dashboard
       </Typography>
@@ -166,6 +163,7 @@ const HomePage: React.FC = () => {
                 url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
               />
+              {/* @ts-ignore */}
               <Markers data={fetchedStateData} />
             </Map>
           )}
