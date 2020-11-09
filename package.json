@@ -42,7 +42,7 @@
         "eject": "react-scripts eject",
         "predeploy": "npm run build",
         "deploy": "gh-pages -d build",
-        "start-api":"cd api && venv/bin/flask run --no-debugger"
+        "start-api":"cd api && venv/bin/flask initdb && venv/bin/flask run --no-debugger"
     },
     "eslintConfig": {
         "extends": "react-app"

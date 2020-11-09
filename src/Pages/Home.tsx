@@ -106,12 +106,12 @@ const HomePage: React.FC = () => {
   const [fetchedStateData, setFetchedStateData] = useState<CSVData>(
     initialState
   );
-  const [time, setCurrentTime] = useState(0);
+  const [user, setCurrentUser] = useState(0);
 
   useEffect(() => {
-    fetch('/time').then((res) =>
+    fetch('/user').then((res) =>
       res.json().then((data) => {
-        setCurrentTime(data.time);
+        setCurrentUser(data.username);
       })
     );
   }, []);
@@ -131,7 +131,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={classes.home}>
-      <p>The current time is {time}</p>
+      <p>The current user is {user}</p>
       <Typography variant='h3' style={{ margin: '15px' }}>
         COVID Dashboard
       </Typography>
