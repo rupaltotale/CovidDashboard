@@ -103,19 +103,6 @@ const getTotalDeathsForEthnicity = (data: any, ethnicity: any) => {
     });
   return newData;
 };
-
-const getSeries = (data: any[]) => {
-  if (data) {
-    return data.map((obj: any[]) => obj[1]);
-  }
-  return [];
-};
-const getXAxis = (data: any) => {
-  if (data) {
-    return data.map((obj: any[]) => obj[0]);
-  }
-  return [];
-};
 type CSVData = DSVRowArray | null | any;
 const HomePage: React.FC = () => {
   const initialState: CSVData = null;
@@ -382,10 +369,13 @@ const HomePage: React.FC = () => {
         </div>
       </Paper>
       <AdvTimeGraph
-        series={getSeries(fetchedCasesByDate)}
-        xaxis={getXAxis(fetchedCasesByDate)}
+        series={fetchedCasesByDate?.cases}
+        data={[
+          { name: 'Total Cases To Date', data: fetchedCasesByDate?.cases },
+          { name: 'Total Deaths To Date', data: fetchedCasesByDate?.deaths },
+        ]}
+        xaxis={fetchedCasesByDate?.date}
       />
-      <TimeGraph />
     </div>
   );
 };

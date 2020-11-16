@@ -34,4 +34,8 @@ def get_total_cases_by_date():
                                func.sum(RaceEntry.cases_total),
                                func.sum(RaceEntry.deaths_total),
                                ).group_by(RaceEntry.date)
-    return jsonify(results.all())
+    print(results.all())
+    return jsonify(
+        date=[e[0] for e in results.all()],
+        cases=[e[1] for e in results.all()],
+        deaths=[e[2] for e in results.all()],)
