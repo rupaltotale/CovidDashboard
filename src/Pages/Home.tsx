@@ -7,16 +7,19 @@ import LineGraph from '../Components/LineGraph';
 import SimpleLineGraph from '../Components/SimpleLineGraph';
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Paper, Typography } from '@material-ui/core';
+import { Button, Paper, Typography } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { LatLng } from 'leaflet';
-import DateRangePicker from 'react-bootstrap-daterangepicker';
+// import DateRangePicker from 'react-bootstrap-daterangepicker';
 // you will need the css that comes with bootstrap@3. if you are using
 // a tool like webpack, you can do the following:
 // import 'bootstrap/dist/css/bootstrap.css';
 // you will also need the css that comes with bootstrap-daterangepicker
 import 'bootstrap-daterangepicker/daterangepicker.css';
 import BarGraph from '../Components/BarGraph';
+import { DateRangePicker, DateRange } from 'materialui-daterange-picker';
+
+import { start } from 'repl';
 const useStyles = makeStyles((theme: Theme) => ({
   home: {
     textAlign: 'center',
@@ -43,31 +46,56 @@ const HomePage: React.FC = () => {
   );
   const [fetchedCasesByDate, setFetchedCasesByDate] = useState(initialState);
   const [fetchedCasesByState, setFetchedCasesByState] = useState(initialState);
+  const [casesByStateAndRace, setCasesByStateAndRace] = useState(initialState);
   const [casesByDateAndRace, setCasesByDateAndRace] = useState(initialState);
   const [deathsByDateAndRace, setDeathsByDateAndRace] = useState(initialState);
 
+  const startDate = new Date('04-12-2020');
+  const endDate = new Date();
+  const [open, setOpen] = React.useState(true);
+  const [dateRange, setDateRange] = React.useState<DateRange>({
+    startDate,
+    endDate,
+  });
+  const getQueryParams = () => {
+    return `?start_date=${
+      dateRange.startDate?.toISOString().split('T')[0]
+    }&end_date=${dateRange.endDate?.toISOString().split('T')[0]}`;
+  };
   useEffect(() => {
-    fetch('/get-total-cases-by-state').then((res) =>
+    fetch(`/get-total-cases-by-state${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         setFetchedCasesByState(data);
       })
     );
-    fetch('/get-total-cases-by-date').then((res) =>
+    fetch(`/get-cases-by-state-and-race${getQueryParams()}`).then((res) =>
+      res.json().then((data) => {
+        setCasesByStateAndRace(data);
+      })
+    );
+    fetch(`/get-total-cases-by-date${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         setFetchedCasesByDate(data);
       })
     );
-    fetch('/get-cases-by-date-and-race').then((res) =>
+    fetch(`/get-cases-by-date-and-race${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         setCasesByDateAndRace(data);
       })
     );
-    fetch('/get-deaths-by-date-and-race').then((res) =>
+    fetch(`/get-deaths-by-date-and-race${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         setDeathsByDateAndRace(data);
       })
     );
-  }, []);
+    // fetch('/get-date-range').then((res) =>
+    //   res.json().then((data) => {
+    //     console.log(data);
+    //     setStartDate(new Date(data.start_date));
+    //     setEndDate(new Date(data.end_date));
+    //   })
+    // );
+  }, [dateRange]);
 
   if (fetchedStateData == null) {
     csv(`${process.env.PUBLIC_URL}/state-data.csv`).then((res) => {
@@ -76,14 +104,9 @@ const HomePage: React.FC = () => {
   }
   const classes = useStyles();
   const position: LatLng = new LatLng(41.5, -100.0);
-
+  const toggle = () => {};
   return (
     <div className={classes.home}>
-      <DateRangePicker
-        initialSettings={{ startDate: '1/1/2014', endDate: '3/1/2014' }}
-      >
-        <button>Click Me To Open Picker!</button>
-      </DateRangePicker>
       <Typography variant='h3' style={{ margin: '15px' }}>
         COVID Dashboard
       </Typography>
@@ -123,6 +146,22 @@ const HomePage: React.FC = () => {
           )}
         </div>
       </Paper>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          margin: '10px',
+          alignItems: 'center',
+        }}
+      >
+        <DateRangePicker
+          open={open}
+          toggle={toggle}
+          onChange={(range) => setDateRange(range)}
+          initialDateRange={dateRange}
+        />
+      </div>
       <LineGraph
         series={[
           {
@@ -194,6 +233,29 @@ const HomePage: React.FC = () => {
         ]}
         xaxis={fetchedCasesByState?.state ?? []}
         title='Breakdown of Total Cases and Deaths by State'
+      />
+      <BarGraph
+        series={[
+          {
+            name: 'Total White Cases To Date',
+            data: casesByStateAndRace?.white ?? [],
+          },
+          {
+            name: 'Total African-American Cases To Date',
+            data: casesByStateAndRace?.black ?? [],
+          },
+          {
+            name: 'Total LatinX Cases To Date',
+            data: casesByStateAndRace?.latino ?? [],
+          },
+          {
+            name: 'Total Multiracial Cases To Date',
+            data: casesByStateAndRace?.multi ?? [],
+          },
+        ]}
+        xaxis={casesByStateAndRace?.state ?? []}
+        title='Breakdown of Total Cases by State and Race'
+        simple={true}
       />
     </div>
   );

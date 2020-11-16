@@ -4,6 +4,51 @@ import { Paper, Typography } from '@material-ui/core';
 
 export default class BarGraph extends React.Component {
   getOptions() {
+    const yaxis = this.props.simple
+      ? []
+      : [
+          {
+            axisTicks: {
+              show: true,
+            },
+            axisBorder: {
+              show: true,
+              color: '#FF1654',
+            },
+            labels: {
+              style: {
+                colors: '#FF1654',
+              },
+            },
+            title: {
+              text: this.props.series[0].name,
+              style: {
+                color: '#FF1654',
+              },
+            },
+          },
+          {
+            opposite: true,
+            axisTicks: {
+              show: true,
+            },
+            axisBorder: {
+              show: true,
+              color: '#247BA0',
+            },
+            labels: {
+              style: {
+                colors: '#247BA0',
+              },
+            },
+            title: {
+              text: this.props.series[1].name,
+              style: {
+                color: '#247BA0',
+              },
+            },
+          },
+        ];
     return {
       chart: {
         id: 'basic-bar',
@@ -14,49 +59,7 @@ export default class BarGraph extends React.Component {
       dataLabels: {
         enabled: false,
       },
-      yaxis: [
-        {
-          axisTicks: {
-            show: true,
-          },
-          axisBorder: {
-            show: true,
-            color: '#FF1654',
-          },
-          labels: {
-            style: {
-              colors: '#FF1654',
-            },
-          },
-          title: {
-            text: this.props.series[0].name,
-            style: {
-              color: '#FF1654',
-            },
-          },
-        },
-        {
-          opposite: true,
-          axisTicks: {
-            show: true,
-          },
-          axisBorder: {
-            show: true,
-            color: '#247BA0',
-          },
-          labels: {
-            style: {
-              colors: '#247BA0',
-            },
-          },
-          title: {
-            text: this.props.series[1].name,
-            style: {
-              color: '#247BA0',
-            },
-          },
-        },
-      ],
+      yaxis: yaxis,
     };
   }
   render() {
@@ -84,7 +87,7 @@ export default class BarGraph extends React.Component {
           options={this.getOptions()}
           series={this.props.series}
           type='bar'
-          width='1500'
+          width='1000'
         />
       </Paper>
     );

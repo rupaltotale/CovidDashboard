@@ -16,6 +16,7 @@
         "jest": "^24.9.0",
         "jquery": "^3.5.1",
         "leaflet": "^1.7.1",
+        "materialui-daterange-picker": "^1.1.92",
         "moment": "^2.29.1",
         "pondjs": "^0.9.0",
         "react": "^17.0.1",

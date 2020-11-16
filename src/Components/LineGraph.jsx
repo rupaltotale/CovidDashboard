@@ -88,7 +88,7 @@ export default class LineGraph extends React.Component {
           options={this.getOptions()}
           series={this.props.series}
           type='line'
-          width='1500'
+          width='1000'
         />
       </Paper>
     );
