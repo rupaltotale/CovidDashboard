@@ -47,6 +47,9 @@ const HomePage: React.FC = () => {
   const [fetchedCasesByDate, setFetchedCasesByDate] = useState(initialState);
   const [fetchedCasesByState, setFetchedCasesByState] = useState(initialState);
   const [casesByStateAndRace, setCasesByStateAndRace] = useState(initialState);
+  const [deathsByStateAndRace, setDeathsByStateAndRace] = useState(
+    initialState
+  );
   const [casesByDateAndRace, setCasesByDateAndRace] = useState(initialState);
   const [deathsByDateAndRace, setDeathsByDateAndRace] = useState(initialState);
 
@@ -71,6 +74,11 @@ const HomePage: React.FC = () => {
     fetch(`/get-cases-by-state-and-race${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         setCasesByStateAndRace(data);
+      })
+    );
+    fetch(`/get-deaths-by-state-and-race${getQueryParams()}`).then((res) =>
+      res.json().then((data) => {
+        setDeathsByStateAndRace(data);
       })
     );
     fetch(`/get-total-cases-by-date${getQueryParams()}`).then((res) =>
@@ -110,42 +118,6 @@ const HomePage: React.FC = () => {
       <Typography variant='h3' style={{ margin: '15px' }}>
         COVID Dashboard
       </Typography>
-      <Paper
-        elevation={3}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          alignContent: 'center',
-          margin: '10px',
-          padding: '10px',
-        }}
-      >
-        <Typography
-          variant='h6'
-          color='textSecondary'
-          style={{ marginTop: '10px' }}
-        >
-          Select one of the states on the map for state-specific visualizations
-        </Typography>
-        <div className={classes.leaflet}>
-          {fetchedStateData && (
-            <Map
-              center={position}
-              zoom={3}
-              style={{ height: '100%', width: '90%', margin: 'auto' }}
-            >
-              <TileLayer
-                url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              />
-              {/* @ts-ignore */}
-              <Markers data={fetchedStateData} />
-            </Map>
-          )}
-        </div>
-      </Paper>
       <div
         style={{
           display: 'flex',
@@ -176,50 +148,60 @@ const HomePage: React.FC = () => {
         xaxis={fetchedCasesByDate?.date ?? []}
         title='Total Cases and Deaths to Date'
       />
-      <SimpleLineGraph
-        series={[
-          {
-            name: 'Total White Cases To Date',
-            data: casesByDateAndRace?.white ?? [],
-          },
-          {
-            name: 'Total African-American Cases To Date',
-            data: casesByDateAndRace?.black ?? [],
-          },
-          {
-            name: 'Total LatinX Cases To Date',
-            data: casesByDateAndRace?.latino ?? [],
-          },
-          {
-            name: 'Total Multiracial Cases To Date',
-            data: casesByDateAndRace?.multi ?? [],
-          },
-        ]}
-        xaxis={casesByDateAndRace?.date ?? []}
-        title='Breakdown of Total Cases by Race'
-      />
-      <SimpleLineGraph
-        series={[
-          {
-            name: 'Total White Deaths To Date',
-            data: deathsByDateAndRace?.white ?? [],
-          },
-          {
-            name: 'Total African-American Deaths To Date',
-            data: deathsByDateAndRace?.black ?? [],
-          },
-          {
-            name: 'Total LatinX Deaths To Date',
-            data: deathsByDateAndRace?.latino ?? [],
-          },
-          {
-            name: 'Total Multiracial Deaths To Date',
-            data: deathsByDateAndRace?.multi ?? [],
-          },
-        ]}
-        xaxis={deathsByDateAndRace?.date ?? []}
-        title='Breakdown of Total Deaths by Race'
-      />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          margin: '10px',
+          alignItems: 'center',
+        }}
+      >
+        <SimpleLineGraph
+          series={[
+            {
+              name: 'Total White Cases To Date',
+              data: casesByDateAndRace?.white ?? [],
+            },
+            {
+              name: 'Total African-American Cases To Date',
+              data: casesByDateAndRace?.black ?? [],
+            },
+            {
+              name: 'Total LatinX Cases To Date',
+              data: casesByDateAndRace?.latino ?? [],
+            },
+            {
+              name: 'Total Multiracial Cases To Date',
+              data: casesByDateAndRace?.multi ?? [],
+            },
+          ]}
+          xaxis={casesByDateAndRace?.date ?? []}
+          title='Breakdown of Total Cases by Race'
+        />
+        <SimpleLineGraph
+          series={[
+            {
+              name: 'Total White Deaths To Date',
+              data: deathsByDateAndRace?.white ?? [],
+            },
+            {
+              name: 'Total African-American Deaths To Date',
+              data: deathsByDateAndRace?.black ?? [],
+            },
+            {
+              name: 'Total LatinX Deaths To Date',
+              data: deathsByDateAndRace?.latino ?? [],
+            },
+            {
+              name: 'Total Multiracial Deaths To Date',
+              data: deathsByDateAndRace?.multi ?? [],
+            },
+          ]}
+          xaxis={deathsByDateAndRace?.date ?? []}
+          title='Breakdown of Total Deaths by Race'
+        />
+      </div>
       <BarGraph
         series={[
           {
@@ -234,29 +216,98 @@ const HomePage: React.FC = () => {
         xaxis={fetchedCasesByState?.state ?? []}
         title='Breakdown of Total Cases and Deaths by State'
       />
-      <BarGraph
-        series={[
-          {
-            name: 'Total White Cases To Date',
-            data: casesByStateAndRace?.white ?? [],
-          },
-          {
-            name: 'Total African-American Cases To Date',
-            data: casesByStateAndRace?.black ?? [],
-          },
-          {
-            name: 'Total LatinX Cases To Date',
-            data: casesByStateAndRace?.latino ?? [],
-          },
-          {
-            name: 'Total Multiracial Cases To Date',
-            data: casesByStateAndRace?.multi ?? [],
-          },
-        ]}
-        xaxis={casesByStateAndRace?.state ?? []}
-        title='Breakdown of Total Cases by State and Race'
-        simple={true}
-      />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          margin: '10px',
+          alignItems: 'center',
+        }}
+      >
+        <BarGraph
+          series={[
+            {
+              name: 'Total White Cases To Date',
+              data: casesByStateAndRace?.white ?? [],
+            },
+            {
+              name: 'Total African-American Cases To Date',
+              data: casesByStateAndRace?.black ?? [],
+            },
+            {
+              name: 'Total LatinX Cases To Date',
+              data: casesByStateAndRace?.latino ?? [],
+            },
+            {
+              name: 'Total Multiracial Cases To Date',
+              data: casesByStateAndRace?.multi ?? [],
+            },
+          ]}
+          xaxis={casesByStateAndRace?.state ?? []}
+          title='Breakdown of Total Cases by State and Race'
+          simple={true}
+        />
+        <BarGraph
+          series={[
+            {
+              name: 'Total White Deaths To Date',
+              data: deathsByStateAndRace?.white ?? [],
+            },
+            {
+              name: 'Total African-American Deaths To Date',
+              data: deathsByStateAndRace?.black ?? [],
+            },
+            {
+              name: 'Total LatinX Deaths To Date',
+              data: deathsByStateAndRace?.latino ?? [],
+            },
+            {
+              name: 'Total Multiracial Deaths To Date',
+              data: deathsByStateAndRace?.multi ?? [],
+            },
+          ]}
+          xaxis={deathsByStateAndRace?.state ?? []}
+          title='Breakdown of Total Deaths by State and Race'
+          simple={true}
+        />
+      </div>
+      <Paper
+        elevation={3}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          alignContent: 'center',
+          margin: '10px',
+          padding: '10px',
+        }}
+      >
+        <Typography
+          variant='h6'
+          color='textSecondary'
+          style={{ marginTop: '10px' }}
+        >
+          Select one of the states on the map for state-specific visualizations
+        </Typography>
+        <div className={classes.leaflet}>
+          {fetchedStateData && (
+            <Map
+              center={position}
+              zoom={3.5}
+              style={{ height: '100%', width: '90%', margin: 'auto' }}
+            >
+              <TileLayer
+                url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              />
+              {/* @ts-ignore */}
+              <Markers data={fetchedStateData} />
+            </Map>
+          )}
+        </div>
+      </Paper>
     </div>
   );
 };
