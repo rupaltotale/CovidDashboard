@@ -1,7 +1,8 @@
+import { Paper, Typography } from '@material-ui/core';
 import React from 'react';
 import Chart from 'react-apexcharts';
 
-export default class AdvTimeGraph extends React.Component {
+export default class LineGraph extends React.Component {
   getOptions() {
     return {
       chart: {
@@ -32,7 +33,7 @@ export default class AdvTimeGraph extends React.Component {
             },
           },
           title: {
-            text: this.props.data[0].name,
+            text: this.props.series[0].name,
             style: {
               color: '#FF1654',
             },
@@ -53,7 +54,7 @@ export default class AdvTimeGraph extends React.Component {
             },
           },
           title: {
-            text: this.props.data[1].name,
+            text: this.props.series[1].name,
             style: {
               color: '#247BA0',
             },
@@ -64,12 +65,32 @@ export default class AdvTimeGraph extends React.Component {
   }
   render() {
     return (
-      <Chart
-        options={this.getOptions()}
-        series={this.props.data}
-        type='line'
-        width='1500'
-      />
+      <Paper
+        elevation={3}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          alignContent: 'center',
+          margin: '10px',
+          padding: '10px',
+        }}
+      >
+        <Typography
+          variant='h6'
+          color='textSecondary'
+          style={{ marginTop: '10px' }}
+        >
+          {this.props.title}
+        </Typography>
+        <Chart
+          options={this.getOptions()}
+          series={this.props.series}
+          type='line'
+          width='1500'
+        />
+      </Paper>
     );
   }
 }

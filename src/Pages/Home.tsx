@@ -1,19 +1,10 @@
 //React Imports
 import React, { useEffect, useState } from 'react';
-import {
-  VictoryBar,
-  VictoryChart,
-  VictoryGroup,
-  VictoryTheme,
-  VictoryLabel,
-  VictoryZoomContainer,
-  VictoryVoronoiContainer,
-} from 'victory';
 import { csv, DSVRowArray } from 'd3';
-import Markers, { State } from '../Components/Markers';
+import Markers from '../Components/Markers';
 /* @ts-ignore */
-import TimeGraph from '../Components/TimeGraph';
-import AdvTimeGraph from '../Components/AdvTimeGraph';
+import LineGraph from '../Components/LineGraph';
+import SimpleLineGraph from '../Components/SimpleLineGraph';
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Paper, Typography } from '@material-ui/core';
@@ -25,6 +16,7 @@ import DateRangePicker from 'react-bootstrap-daterangepicker';
 // import 'bootstrap/dist/css/bootstrap.css';
 // you will also need the css that comes with bootstrap-daterangepicker
 import 'bootstrap-daterangepicker/daterangepicker.css';
+import BarGraph from '../Components/BarGraph';
 const useStyles = makeStyles((theme: Theme) => ({
   home: {
     textAlign: 'center',
@@ -43,93 +35,40 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const getTotalDeathsByState = (data: any) => {
-  const newData = data
-    .slice(0, 51)
-    .map((row: any) => {
-      if (!isNaN(parseInt(row.Deaths_Total))) {
-        return { state: row.State, total: parseInt(row.Deaths_Total) / 1000 };
-      }
-      return { state: row.State, total: 0 };
-    })
-    .sort((a: any, b: any) => b.total - a.total)
-    .slice(0, 10);
-  return newData;
-};
-const getTotalCasesPerState = (data: any) => {
-  const newData = data
-    .slice(0, 51)
-    .map((row: any) => {
-      if (!isNaN(parseInt(row.Cases_Total))) {
-        return { state: row.State, total: parseInt(row.Cases_Total) / 1000 };
-      }
-      return { state: row.State, total: 0 };
-    })
-    .sort((a: any, b: any) => b.total - a.total)
-    .slice(0, 10);
-  return newData;
-};
-
-const getTotalCasesForEthnicity = (data: any, ethnicity: any) => {
-  const newData = data
-    .slice(0, 51)
-    .sort((a: any, b: any) => b.Cases_Total - a.Cases_Total)
-    .slice(0, 10)
-    .map((row: any) => {
-      if (!isNaN(parseInt(row[`Cases_${ethnicity}`]))) {
-        return {
-          state: row.State,
-          total: parseInt(row[`Cases_${ethnicity}`]) / 1000,
-        };
-      }
-      return { state: row.State, total: 0 };
-    });
-  return newData;
-};
-
-const getTotalDeathsForEthnicity = (data: any, ethnicity: any) => {
-  const newData = data
-    .slice(0, 51)
-    .sort((a: any, b: any) => b.Cases_Total - a.Cases_Total)
-    .slice(0, 10)
-    .map((row: any) => {
-      if (!isNaN(parseInt(row[`Deaths_${ethnicity}`]))) {
-        return {
-          state: row.State,
-          total: parseInt(row[`Deaths_${ethnicity}`]) / 1000,
-        };
-      }
-      return { state: row.State, total: 0 };
-    });
-  return newData;
-};
 type CSVData = DSVRowArray | null | any;
 const HomePage: React.FC = () => {
   const initialState: CSVData = null;
-  const [fetchedCovidData, setFetchedCovidData] = useState<CSVData>(
-    initialState
-  );
   const [fetchedStateData, setFetchedStateData] = useState<CSVData>(
     initialState
   );
-  const [fetchedCasesByDate, setFetchedCasesByDate] = useState<CSVData>(
-    initialState
-  );
+  const [fetchedCasesByDate, setFetchedCasesByDate] = useState(initialState);
+  const [fetchedCasesByState, setFetchedCasesByState] = useState(initialState);
+  const [casesByDateAndRace, setCasesByDateAndRace] = useState(initialState);
+  const [deathsByDateAndRace, setDeathsByDateAndRace] = useState(initialState);
 
   useEffect(() => {
+    fetch('/get-total-cases-by-state').then((res) =>
+      res.json().then((data) => {
+        setFetchedCasesByState(data);
+      })
+    );
     fetch('/get-total-cases-by-date').then((res) =>
       res.json().then((data) => {
-        console.log(data);
         setFetchedCasesByDate(data);
+      })
+    );
+    fetch('/get-cases-by-date-and-race').then((res) =>
+      res.json().then((data) => {
+        setCasesByDateAndRace(data);
+      })
+    );
+    fetch('/get-deaths-by-date-and-race').then((res) =>
+      res.json().then((data) => {
+        setDeathsByDateAndRace(data);
       })
     );
   }, []);
 
-  if (fetchedCovidData == null) {
-    csv(`${process.env.PUBLIC_URL}/covid-data.csv`).then((res) => {
-      setFetchedCovidData(res);
-    });
-  }
   if (fetchedStateData == null) {
     csv(`${process.env.PUBLIC_URL}/state-data.csv`).then((res) => {
       setFetchedStateData(res);
@@ -156,6 +95,8 @@ const HomePage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           alignContent: 'center',
+          margin: '10px',
+          padding: '10px',
         }}
       >
         <Typography
@@ -182,199 +123,77 @@ const HomePage: React.FC = () => {
           )}
         </div>
       </Paper>
-      <Paper style={{ marginBottom: '10px' }}>
-        <Typography
-          variant='h6'
-          color='textSecondary'
-          style={{ marginTop: '20px' }}
-        >
-          Overview of COVID cases
-        </Typography>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Paper style={{ margin: '10px', width: '50%' }} variant='outlined'>
-            <div className={classes.chart}>
-              <VictoryChart
-                theme={VictoryTheme.material}
-                domainPadding={10}
-                containerComponent={
-                  <VictoryVoronoiContainer
-                    labels={({ datum }) => {
-                      return `${datum.xName}, ${datum._y * 1000}`;
-                    }}
-                  />
-                }
-              >
-                <VictoryLabel
-                  x={25}
-                  y={24}
-                  text='Number of total cases for top ten states (x 1000)'
-                />
-                {fetchedCovidData && (
-                  <VictoryBar
-                    horizontal
-                    data={getTotalCasesPerState(fetchedCovidData)}
-                    x='state'
-                    y='total'
-                  ></VictoryBar>
-                )}
-              </VictoryChart>
-            </div>
-            <div className={classes.chart}>
-              <VictoryChart
-                domainPadding={20}
-                theme={VictoryTheme.material}
-                containerComponent={
-                  <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
-                }
-              >
-                <VictoryLabel
-                  x={25}
-                  y={24}
-                  text='Breakdown of total cases by race for top ten states (x 1000)'
-                />
-                {fetchedCovidData && (
-                  <VictoryGroup
-                    offset={5}
-                    colorScale={'qualitative'}
-                    theme={VictoryTheme.material}
-                    horizontal
-                  >
-                    <VictoryBar
-                      data={getTotalCasesForEthnicity(
-                        fetchedCovidData,
-                        'White'
-                      )}
-                      x='state'
-                      y='total'
-                    />
-                    <VictoryBar
-                      data={getTotalCasesForEthnicity(
-                        fetchedCovidData,
-                        'Black'
-                      )}
-                      x='state'
-                      y='total'
-                    />
-                    <VictoryBar
-                      data={getTotalCasesForEthnicity(
-                        fetchedCovidData,
-                        'Asian'
-                      )}
-                      x='state'
-                      y='total'
-                    />
-                    <VictoryBar
-                      data={getTotalCasesForEthnicity(fetchedCovidData, 'AIAN')}
-                      x='state'
-                      y='total'
-                    />
-                  </VictoryGroup>
-                )}
-              </VictoryChart>
-            </div>
-          </Paper>
-          <Paper style={{ margin: '10px', width: '50%' }} variant='outlined'>
-            <div className={classes.chart}>
-              <VictoryChart
-                theme={VictoryTheme.material}
-                domainPadding={10}
-                containerComponent={
-                  <VictoryVoronoiContainer
-                    labels={({ datum }) => {
-                      return `${datum.xName}, ${datum._y * 1000}`;
-                    }}
-                  />
-                }
-              >
-                <VictoryLabel
-                  x={25}
-                  y={24}
-                  text='Number of total deaths for top ten states (x 1000)'
-                />
-                {fetchedCovidData && (
-                  <VictoryBar
-                    horizontal
-                    data={getTotalDeathsByState(fetchedCovidData)}
-                    x='state'
-                    y='total'
-                  ></VictoryBar>
-                )}
-              </VictoryChart>
-            </div>
-
-            <div className={classes.chart}>
-              <VictoryChart
-                domainPadding={20}
-                theme={VictoryTheme.material}
-                containerComponent={
-                  <VictoryZoomContainer minimumZoom={{ x: 1, y: 10 }} />
-                }
-              >
-                <VictoryLabel
-                  x={25}
-                  y={24}
-                  text='Breakdown of total deaths by race for top ten states (x 1000)'
-                />
-                {fetchedCovidData && (
-                  <VictoryGroup
-                    offset={5}
-                    colorScale={'qualitative'}
-                    theme={VictoryTheme.material}
-                    horizontal
-                  >
-                    <VictoryBar
-                      data={getTotalDeathsForEthnicity(
-                        fetchedCovidData,
-                        'White'
-                      )}
-                      x='state'
-                      y='total'
-                    />
-                    <VictoryBar
-                      data={getTotalDeathsForEthnicity(
-                        fetchedCovidData,
-                        'Black'
-                      )}
-                      x='state'
-                      y='total'
-                    />
-                    <VictoryBar
-                      data={getTotalDeathsForEthnicity(
-                        fetchedCovidData,
-                        'Asian'
-                      )}
-                      x='state'
-                      y='total'
-                    />
-                    <VictoryBar
-                      data={getTotalDeathsForEthnicity(
-                        fetchedCovidData,
-                        'AIAN'
-                      )}
-                      x='state'
-                      y='total'
-                    />
-                  </VictoryGroup>
-                )}
-              </VictoryChart>
-            </div>
-          </Paper>
-        </div>
-      </Paper>
-      <AdvTimeGraph
-        series={fetchedCasesByDate?.cases}
-        data={[
-          { name: 'Total Cases To Date', data: fetchedCasesByDate?.cases },
-          { name: 'Total Deaths To Date', data: fetchedCasesByDate?.deaths },
+      <LineGraph
+        series={[
+          {
+            name: 'Total Cases To Date',
+            data: fetchedCasesByDate?.cases ?? [],
+          },
+          {
+            name: 'Total Deaths To Date',
+            data: fetchedCasesByDate?.deaths ?? [],
+          },
         ]}
-        xaxis={fetchedCasesByDate?.date}
+        xaxis={fetchedCasesByDate?.date ?? []}
+        title='Total Cases and Deaths to Date'
+      />
+      <SimpleLineGraph
+        series={[
+          {
+            name: 'Total White Cases To Date',
+            data: casesByDateAndRace?.white ?? [],
+          },
+          {
+            name: 'Total African-American Cases To Date',
+            data: casesByDateAndRace?.black ?? [],
+          },
+          {
+            name: 'Total LatinX Cases To Date',
+            data: casesByDateAndRace?.latino ?? [],
+          },
+          {
+            name: 'Total Multiracial Cases To Date',
+            data: casesByDateAndRace?.multi ?? [],
+          },
+        ]}
+        xaxis={casesByDateAndRace?.date ?? []}
+        title='Breakdown of Total Cases by Race'
+      />
+      <SimpleLineGraph
+        series={[
+          {
+            name: 'Total White Deaths To Date',
+            data: deathsByDateAndRace?.white ?? [],
+          },
+          {
+            name: 'Total African-American Deaths To Date',
+            data: deathsByDateAndRace?.black ?? [],
+          },
+          {
+            name: 'Total LatinX Deaths To Date',
+            data: deathsByDateAndRace?.latino ?? [],
+          },
+          {
+            name: 'Total Multiracial Deaths To Date',
+            data: deathsByDateAndRace?.multi ?? [],
+          },
+        ]}
+        xaxis={deathsByDateAndRace?.date ?? []}
+        title='Breakdown of Total Deaths by Race'
+      />
+      <BarGraph
+        series={[
+          {
+            name: 'Total Cases To Date',
+            data: fetchedCasesByState?.cases ?? [],
+          },
+          {
+            name: 'Total Deaths To Date',
+            data: fetchedCasesByState?.deaths ?? [],
+          },
+        ]}
+        xaxis={fetchedCasesByState?.state ?? []}
+        title='Breakdown of Total Cases and Deaths by State'
       />
     </div>
   );
