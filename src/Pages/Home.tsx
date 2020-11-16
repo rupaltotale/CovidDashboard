@@ -11,13 +11,20 @@ import {
 } from 'victory';
 import { csv, DSVRowArray } from 'd3';
 import Markers, { State } from '../Components/Markers';
-
+/* @ts-ignore */
+import TimeGraph from '../Components/TimeGraph';
+import AdvTimeGraph from '../Components/AdvTimeGraph';
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Paper, Typography } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { LatLng } from 'leaflet';
-
+import DateRangePicker from 'react-bootstrap-daterangepicker';
+// you will need the css that comes with bootstrap@3. if you are using
+// a tool like webpack, you can do the following:
+// import 'bootstrap/dist/css/bootstrap.css';
+// you will also need the css that comes with bootstrap-daterangepicker
+import 'bootstrap-daterangepicker/daterangepicker.css';
 const useStyles = makeStyles((theme: Theme) => ({
   home: {
     textAlign: 'center',
@@ -97,7 +104,19 @@ const getTotalDeathsForEthnicity = (data: any, ethnicity: any) => {
   return newData;
 };
 
-type CSVData = DSVRowArray | null;
+const getSeries = (data: any[]) => {
+  if (data) {
+    return data.map((obj: any[]) => obj[1]);
+  }
+  return [];
+};
+const getXAxis = (data: any) => {
+  if (data) {
+    return data.map((obj: any[]) => obj[0]);
+  }
+  return [];
+};
+type CSVData = DSVRowArray | null | any;
 const HomePage: React.FC = () => {
   const initialState: CSVData = null;
   const [fetchedCovidData, setFetchedCovidData] = useState<CSVData>(
@@ -106,12 +125,15 @@ const HomePage: React.FC = () => {
   const [fetchedStateData, setFetchedStateData] = useState<CSVData>(
     initialState
   );
-  const [user, setCurrentUser] = useState(0);
+  const [fetchedCasesByDate, setFetchedCasesByDate] = useState<CSVData>(
+    initialState
+  );
 
   useEffect(() => {
-    fetch('/user').then((res) =>
+    fetch('/get-total-cases-by-date').then((res) =>
       res.json().then((data) => {
-        setCurrentUser(data.username);
+        console.log(data);
+        setFetchedCasesByDate(data);
       })
     );
   }, []);
@@ -131,7 +153,11 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={classes.home}>
-      <p>The current user is {user}</p>
+      <DateRangePicker
+        initialSettings={{ startDate: '1/1/2014', endDate: '3/1/2014' }}
+      >
+        <button>Click Me To Open Picker!</button>
+      </DateRangePicker>
       <Typography variant='h3' style={{ margin: '15px' }}>
         COVID Dashboard
       </Typography>
@@ -355,6 +381,11 @@ const HomePage: React.FC = () => {
           </Paper>
         </div>
       </Paper>
+      <AdvTimeGraph
+        series={getSeries(fetchedCasesByDate)}
+        xaxis={getXAxis(fetchedCasesByDate)}
+      />
+      <TimeGraph />
     </div>
   );
 };

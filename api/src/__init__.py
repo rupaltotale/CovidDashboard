@@ -3,18 +3,37 @@ from flask_sqlalchemy import SQLAlchemy
 import datetime
 import csv
 import requests
+import click
+from flask.cli import with_appcontext
+from src.commands import usersbp
+from flask.json import JSONEncoder
+from datetime import date
 
+
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        try:
+            if isinstance(obj, date):
+                return obj.isoformat()
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
 app = Flask(__name__)
+app.register_blueprint(usersbp)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///site.db"
 db = SQLAlchemy(app)
+app.json_encoder = CustomJSONEncoder
 
-from src.models import User, Post, RaceEntry
+from src.models import RaceEntry
 from src import routes
 
 
-# @app.before_first_request
-@app.cli.command('initdb')
-def setup():
+@click.command(name='create')
+@with_appcontext
+def create():
     print("===> Setting up database")
     # Recreate database each time initdb is called
     db.drop_all()
@@ -60,3 +79,6 @@ def setup():
             )
             db.session.add(db_entry)
     db.session.commit()
+
+
+app.cli.add_command(create)
