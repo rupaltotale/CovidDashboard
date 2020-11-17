@@ -29,6 +29,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     textAlign: 'center',
     width: '80%',
     margin: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chart: {
     height: '500px',
@@ -165,27 +169,29 @@ const HomePage: React.FC = () => {
           // ]}
         />
       </div>
-      <LineGraph
-        series={[
-          {
-            name: 'Total Cases To Date',
-            data: fetchedCasesByDate?.cases ?? [],
-          },
-          {
-            name: 'Total Deaths To Date',
-            data: fetchedCasesByDate?.deaths ?? [],
-          },
-        ]}
-        xaxis={fetchedCasesByDate?.date ?? []}
-        title='Total Cases and Deaths to Date'
-      />
+      <div style={{ width: '100%' }}>
+        <LineGraph
+          series={[
+            {
+              name: 'Total Cases To Date',
+              data: fetchedCasesByDate?.cases ?? [],
+            },
+            {
+              name: 'Total Deaths To Date',
+              data: fetchedCasesByDate?.deaths ?? [],
+            },
+          ]}
+          xaxis={fetchedCasesByDate?.date ?? []}
+          title='Total Cases and Deaths to Date'
+        />
+      </div>
       <div
         style={{
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
-          margin: '10px',
           alignItems: 'center',
+          width: '100%',
         }}
       >
         <SimpleLineGraph
@@ -233,27 +239,29 @@ const HomePage: React.FC = () => {
           title='Breakdown of Total Deaths by Race'
         />
       </div>
-      <BarGraph
-        series={[
-          {
-            name: 'Total Cases To Date',
-            data: fetchedCasesByState?.cases ?? [],
-          },
-          {
-            name: 'Total Deaths To Date',
-            data: fetchedCasesByState?.deaths ?? [],
-          },
-        ]}
-        xaxis={fetchedCasesByState?.state ?? []}
-        title='Breakdown of Total Cases and Deaths by State'
-      />
+      <div style={{ width: '100%' }}>
+        <BarGraph
+          series={[
+            {
+              name: 'Total Cases To Date',
+              data: fetchedCasesByState?.cases ?? [],
+            },
+            {
+              name: 'Total Deaths To Date',
+              data: fetchedCasesByState?.deaths ?? [],
+            },
+          ]}
+          xaxis={fetchedCasesByState?.state ?? []}
+          title='Breakdown of Total Cases and Deaths by State'
+        />
+      </div>
       <div
         style={{
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
-          margin: '10px',
           alignItems: 'center',
+          width: '100%',
         }}
       >
         <BarGraph
@@ -313,6 +321,7 @@ const HomePage: React.FC = () => {
           alignContent: 'center',
           margin: '10px',
           padding: '10px',
+          width: '100%',
         }}
       >
         <Typography
@@ -346,31 +355,30 @@ const HomePage: React.FC = () => {
         </div>
       </Paper>
       {selectedState ? (
-        <div>
-          <Typography variant='h4' color='textSecondary'>
-            Learn more about spread of COVID in {selectedState}
-          </Typography>
-          <LineGraph
-            series={[
-              {
-                name: `Total Cases To Date in ${selectedState}`,
-                data: dataByState?.cases ?? [],
-              },
-              {
-                name: `Total Deaths To Date in ${selectedState}`,
-                data: dataByState?.deaths ?? [],
-              },
-            ]}
-            xaxis={dataByState?.date ?? []}
-            title={`Total Cases and Deaths to Date in ${selectedState}`}
-          />
+        <div style={{ width: '100%' }}>
+          <div style={{ width: '100%' }}>
+            <LineGraph
+              series={[
+                {
+                  name: `Total Cases To Date in ${selectedState}`,
+                  data: dataByState?.cases ?? [],
+                },
+                {
+                  name: `Total Deaths To Date in ${selectedState}`,
+                  data: dataByState?.deaths ?? [],
+                },
+              ]}
+              xaxis={dataByState?.date ?? []}
+              title={`Total Cases and Deaths to Date in ${selectedState}`}
+            />
+          </div>
           <div
             style={{
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'center',
-              margin: '10px',
               alignItems: 'center',
+              width: '100%',
             }}
           >
             <SimpleLineGraph

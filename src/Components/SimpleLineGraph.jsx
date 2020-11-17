@@ -39,12 +39,14 @@ export default class SimpleLineGraph extends React.Component {
           alignContent: 'center',
           margin: '10px',
           padding: '10px',
+          width: '100%',
+          height: '750px',
         }}
       >
         <Typography
           variant='h6'
           color='textSecondary'
-          style={{ marginTop: '10px' }}
+          style={{ marginBottom: '10px' }}
         >
           {this.props.title}
         </Typography>
@@ -52,7 +54,9 @@ export default class SimpleLineGraph extends React.Component {
           options={this.getOptions()}
           series={this.props.series}
           type='line'
-          width='1000'
+          width='100%'
+          height='80%'
+          style={{ width: '100%' }}
         />
       </Paper>
     );
