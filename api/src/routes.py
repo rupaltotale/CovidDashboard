@@ -50,7 +50,7 @@ def get_data_by_date_for_state(state):
                                func.sum(RaceEntry.cases_total),
                                func.sum(RaceEntry.deaths_total),
                                ).group_by(RaceEntry.date).filter(RaceEntry.date >= start_date
-                                                                 ).filter(RaceEntry.date <= end_date)
+                                                                 ).filter(RaceEntry.date <= end_date).filter(RaceEntry.state == state)
     return jsonify(
         date=[e[0] for e in results.all()],
         cases=[e[1] for e in results.all()],

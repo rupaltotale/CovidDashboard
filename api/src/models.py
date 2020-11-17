@@ -26,7 +26,6 @@ from src import db
 #     content = db.Column(db.Text, nullable=False)
 #     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-
 class RaceEntry(db.Model):
     id = db.Column(db.Integer, nullable=True, primary_key=True)
     date = db.Column(db.Date, nullable=False)

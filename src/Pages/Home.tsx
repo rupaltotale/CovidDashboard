@@ -1,5 +1,5 @@
 //React Imports
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { csv, DSVRowArray } from 'd3';
 import Markers from '../Components/Markers';
 /* @ts-ignore */
@@ -17,7 +17,11 @@ import { LatLng } from 'leaflet';
 // you will also need the css that comes with bootstrap-daterangepicker
 import 'bootstrap-daterangepicker/daterangepicker.css';
 import BarGraph from '../Components/BarGraph';
-import { DateRangePicker, DateRange } from 'materialui-daterange-picker';
+import {
+  DateRangePicker,
+  DateRange,
+  DefinedRange,
+} from 'materialui-daterange-picker';
 
 import { start } from 'repl';
 const useStyles = makeStyles((theme: Theme) => ({
@@ -52,7 +56,7 @@ const HomePage: React.FC = () => {
   );
   const [casesByDateAndRace, setCasesByDateAndRace] = useState(initialState);
   const [deathsByDateAndRace, setDeathsByDateAndRace] = useState(initialState);
-
+  const [dataByState, setDataByState] = useState(initialState);
   const startDate = new Date('04-12-2020');
   const endDate = new Date();
   const [open, setOpen] = React.useState(true);
@@ -60,12 +64,16 @@ const HomePage: React.FC = () => {
     startDate,
     endDate,
   });
-  const getQueryParams = () => {
+  const [selectedState, setSelectedState] = React.useState<String | null>(null);
+
+  const getQueryParams = useCallback(() => {
     return `?start_date=${
       dateRange.startDate?.toISOString().split('T')[0]
     }&end_date=${dateRange.endDate?.toISOString().split('T')[0]}`;
-  };
+  }, [dateRange]);
+
   useEffect(() => {
+    console.log('Fetching data...');
     fetch(`/get-total-cases-by-state${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         setFetchedCasesByState(data);
@@ -96,14 +104,16 @@ const HomePage: React.FC = () => {
         setDeathsByDateAndRace(data);
       })
     );
-    // fetch('/get-date-range').then((res) =>
-    //   res.json().then((data) => {
-    //     console.log(data);
-    //     setStartDate(new Date(data.start_date));
-    //     setEndDate(new Date(data.end_date));
-    //   })
-    // );
-  }, [dateRange]);
+  }, [getQueryParams]);
+  useEffect(() => {
+    fetch(
+      `/get-total-cases-by-date-for-state/${selectedState}${getQueryParams()}`
+    ).then((res) =>
+      res.json().then((data) => {
+        setDataByState(data);
+      })
+    );
+  }, [getQueryParams, selectedState]);
 
   if (fetchedStateData == null) {
     csv(`${process.env.PUBLIC_URL}/state-data.csv`).then((res) => {
@@ -132,6 +142,9 @@ const HomePage: React.FC = () => {
           toggle={toggle}
           onChange={(range) => setDateRange(range)}
           initialDateRange={dateRange}
+          // definedRanges={[
+          //   { label: 'All Time', startDate: startDate, endDate: endDate },
+          // ]}
         />
       </div>
       <LineGraph
@@ -300,14 +313,41 @@ const HomePage: React.FC = () => {
             >
               <TileLayer
                 url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                // attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
               />
               {/* @ts-ignore */}
-              <Markers data={fetchedStateData} />
+              <Markers
+                data={fetchedStateData}
+                viewMore={(state: String) => {
+                  console.log(state);
+                  setSelectedState(state);
+                }}
+              />
             </Map>
           )}
         </div>
       </Paper>
+      {selectedState ? (
+        <div>
+          <Typography variant='h4' color='textSecondary'>
+            Learn more about {selectedState}
+          </Typography>
+          <LineGraph
+            series={[
+              {
+                name: `Total Cases To Date in ${selectedState}`,
+                data: dataByState?.cases ?? [],
+              },
+              {
+                name: `Total Deaths To Date in ${selectedState}`,
+                data: dataByState?.deaths ?? [],
+              },
+            ]}
+            xaxis={dataByState?.date ?? []}
+            title={`Total Cases and Deaths to Date in ${selectedState}`}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

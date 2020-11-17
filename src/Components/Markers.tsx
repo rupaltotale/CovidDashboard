@@ -12,9 +12,10 @@ export interface State {
 
 interface MarkersProps {
   data: State[];
+  viewMore: Function;
 }
 
-const Markers: React.FC<MarkersProps> = ({ data }) => {
+const Markers: React.FC<MarkersProps> = ({ data, viewMore }) => {
   return (
     <div>
       {data.map((obj) => {
@@ -24,7 +25,9 @@ const Markers: React.FC<MarkersProps> = ({ data }) => {
             key={obj.state}
           >
             <Popup>
-              <Button variant='contained'>View more about {obj.name}</Button>
+              <Button variant='contained' onClick={() => viewMore(obj.state)}>
+                View more about {obj.name}
+              </Button>
             </Popup>
           </Marker>
         );
