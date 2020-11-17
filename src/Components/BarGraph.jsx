@@ -1,11 +1,20 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
 import { Paper, Typography } from '@material-ui/core';
+import { prettifyNumber } from '../Utils/functions';
 
 export default class BarGraph extends React.Component {
   getOptions() {
+    const defaultLabels = {
+      formatter: (value) => prettifyNumber(value),
+    };
+
     const yaxis = this.props.simple
-      ? []
+      ? [
+          {
+            labels: defaultLabels,
+          },
+        ]
       : [
           {
             axisTicks: {
@@ -16,6 +25,7 @@ export default class BarGraph extends React.Component {
               color: '#FF1654',
             },
             labels: {
+              ...defaultLabels,
               style: {
                 colors: '#FF1654',
               },
@@ -37,6 +47,7 @@ export default class BarGraph extends React.Component {
               color: '#247BA0',
             },
             labels: {
+              ...defaultLabels,
               style: {
                 colors: '#247BA0',
               },
@@ -58,6 +69,11 @@ export default class BarGraph extends React.Component {
       },
       dataLabels: {
         enabled: false,
+      },
+      tooltip: {
+        y: {
+          formatter: (value) => prettifyNumber(value),
+        },
       },
       yaxis: yaxis,
     };

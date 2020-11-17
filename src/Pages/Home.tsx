@@ -54,6 +54,10 @@ const HomePage: React.FC = () => {
   const [deathsByStateAndRace, setDeathsByStateAndRace] = useState(
     initialState
   );
+  const [casesByRaceForState, setCasesByRaceForState] = useState(initialState);
+  const [deathsByRaceForState, setDeathsByRaceForState] = useState(
+    initialState
+  );
   const [casesByDateAndRace, setCasesByDateAndRace] = useState(initialState);
   const [deathsByDateAndRace, setDeathsByDateAndRace] = useState(initialState);
   const [dataByState, setDataByState] = useState(initialState);
@@ -111,6 +115,20 @@ const HomePage: React.FC = () => {
     ).then((res) =>
       res.json().then((data) => {
         setDataByState(data);
+      })
+    );
+    fetch(
+      `/get-cases-by-date-and-race-for-state/${selectedState}${getQueryParams()}`
+    ).then((res) =>
+      res.json().then((data) => {
+        setCasesByRaceForState(data);
+      })
+    );
+    fetch(
+      `/get-deaths-by-date-and-race-for-state/${selectedState}${getQueryParams()}`
+    ).then((res) =>
+      res.json().then((data) => {
+        setDeathsByRaceForState(data);
       })
     );
   }, [getQueryParams, selectedState]);
@@ -330,7 +348,7 @@ const HomePage: React.FC = () => {
       {selectedState ? (
         <div>
           <Typography variant='h4' color='textSecondary'>
-            Learn more about {selectedState}
+            Learn more about spread of COVID in {selectedState}
           </Typography>
           <LineGraph
             series={[
@@ -346,6 +364,60 @@ const HomePage: React.FC = () => {
             xaxis={dataByState?.date ?? []}
             title={`Total Cases and Deaths to Date in ${selectedState}`}
           />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              margin: '10px',
+              alignItems: 'center',
+            }}
+          >
+            <SimpleLineGraph
+              series={[
+                {
+                  name: `Total White Cases To Date in ${selectedState}`,
+                  data: casesByRaceForState?.white ?? [],
+                },
+                {
+                  name: `Total African-American Cases To Date in ${selectedState}`,
+                  data: casesByRaceForState?.black ?? [],
+                },
+                {
+                  name: `Total LatinX Cases To Date in ${selectedState}`,
+                  data: casesByRaceForState?.latino ?? [],
+                },
+                {
+                  name: `Total Multiracial Cases To Date in ${selectedState}`,
+                  data: casesByRaceForState?.multi ?? [],
+                },
+              ]}
+              xaxis={casesByRaceForState?.date ?? []}
+              title={`Breakdown of Total Cases by Race in ${selectedState}`}
+            />
+            <SimpleLineGraph
+              series={[
+                {
+                  name: `Total White Deaths To Date in ${selectedState}`,
+                  data: deathsByRaceForState?.white ?? [],
+                },
+                {
+                  name: `Total African-American Deaths To Date in ${selectedState}`,
+                  data: deathsByRaceForState?.black ?? [],
+                },
+                {
+                  name: `Total LatinX Deaths To Date in ${selectedState}`,
+                  data: deathsByRaceForState?.latino ?? [],
+                },
+                {
+                  name: `Total Multiracial Deaths To Date in ${selectedState}`,
+                  data: deathsByRaceForState?.multi ?? [],
+                },
+              ]}
+              xaxis={deathsByRaceForState?.date ?? []}
+              title={`Breakdown of Total Deaths by Race in ${selectedState}`}
+            />
+          </div>
         </div>
       ) : null}
     </div>

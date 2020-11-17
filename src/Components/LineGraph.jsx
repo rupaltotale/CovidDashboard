@@ -1,9 +1,13 @@
 import { Paper, Typography } from '@material-ui/core';
 import React from 'react';
 import Chart from 'react-apexcharts';
+import { prettifyNumber } from '../Utils/functions';
 
 export default class LineGraph extends React.Component {
   getOptions() {
+    const defaultLabels = {
+      formatter: (value) => prettifyNumber(value),
+    };
     return {
       chart: {
         id: 'basic-bar',
@@ -18,6 +22,11 @@ export default class LineGraph extends React.Component {
       markers: {
         size: [1, 1],
       },
+      tooltip: {
+        y: {
+          formatter: (value) => prettifyNumber(value),
+        },
+      },
       yaxis: [
         {
           axisTicks: {
@@ -28,6 +37,7 @@ export default class LineGraph extends React.Component {
             color: '#FF1654',
           },
           labels: {
+            ...defaultLabels,
             style: {
               colors: '#FF1654',
             },
@@ -49,6 +59,7 @@ export default class LineGraph extends React.Component {
             color: '#247BA0',
           },
           labels: {
+            ...defaultLabels,
             style: {
               colors: '#247BA0',
             },

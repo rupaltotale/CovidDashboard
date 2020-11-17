@@ -1,6 +1,7 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
 import { Paper, Typography } from '@material-ui/core';
+import { prettifyNumber } from '../Utils/functions';
 
 export default class SimpleLineGraph extends React.Component {
   getOptions() {
@@ -11,8 +12,18 @@ export default class SimpleLineGraph extends React.Component {
       xaxis: {
         categories: this.props.xaxis,
       },
+      yaxis: {
+        labels: {
+          formatter: (value) => prettifyNumber(value),
+        },
+      },
       markers: {
         size: [1, 1],
+      },
+      tooltip: {
+        y: {
+          formatter: (value) => prettifyNumber(value),
+        },
       },
     };
   }
