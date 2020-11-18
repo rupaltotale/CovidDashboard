@@ -26,6 +26,16 @@ from src import db
 #     content = db.Column(db.Text, nullable=False)
 #     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+
+class StateEntry(db.Model):
+    id = db.Column(db.Integer, nullable=True, primary_key=True)
+    latitude = db.Column(db.String, nullable=False)
+    longitude = db.Column(db.String, nullable=False)
+    population = db.Column(db.String, nullable=False)
+    state_abbreviation = db.Column(db.String, nullable=False)
+    state_name = db.Column(db.String, nullable=False)
+
+
 class RaceEntry(db.Model):
     id = db.Column(db.Integer, nullable=True, primary_key=True)
     date = db.Column(db.Date, nullable=False)
