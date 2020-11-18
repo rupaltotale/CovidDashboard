@@ -88,7 +88,7 @@ def create():
         reader = csv.DictReader(decoded_content.splitlines(), delimiter=',')
         for entry in reader:
             db_entry = StateEntry(
-                population=entry['population'],
+                population=int(entry['population'].replace(",", "")),
                 latitude=entry['latitude'],
                 longitude=entry['longitude'],
                 state_abbreviation=entry['state'],

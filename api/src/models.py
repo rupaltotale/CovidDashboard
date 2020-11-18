@@ -31,7 +31,7 @@ class StateEntry(db.Model):
     id = db.Column(db.Integer, nullable=True, primary_key=True)
     latitude = db.Column(db.String, nullable=False)
     longitude = db.Column(db.String, nullable=False)
-    population = db.Column(db.String, nullable=False)
+    population = db.Column(db.Integer, nullable=False)
     state_abbreviation = db.Column(db.String, nullable=False)
     state_name = db.Column(db.String, nullable=False)
 
