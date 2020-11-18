@@ -21,15 +21,16 @@ class CustomJSONEncoder(JSONEncoder):
         else:
             return list(iterable)
         return JSONEncoder.default(self, obj)
+
+
 app = Flask(__name__)
 app.register_blueprint(usersbp)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///site.db"
 db = SQLAlchemy(app)
 app.json_encoder = CustomJSONEncoder
 
-from src.models import RaceEntry
 from src import routes
-
+from src.models import RaceEntry, StateEntry
 
 @click.command(name='create')
 @with_appcontext
@@ -40,6 +41,7 @@ def create():
     db.create_all()
 
     CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_xmYt4ACPDZCDJcY12kCiMiH0ODyx3E1ZvgOHB8ae1tRcjXbs_yWBOA4j4uoCEADVfC1PS2jYO68B/pub?gid=43720681&single=true&output=csv'
+    STATE_DATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/1VnQ6m8i78LE5wi56M2YyKAHQm-13zKIvQ5MvYMasSmY/export?format=csv&gid=784984593'
 
     with requests.Session() as s:
         download = s.get(CSV_URL, stream=True)
@@ -48,7 +50,7 @@ def create():
 
         reader = csv.DictReader(decoded_content.splitlines(), delimiter=',')
         for entry in reader:
-            #print(datetime.datetime.strptime(entry['Date'], '%Y%m%d').date())
+            # print(datetime.datetime.strptime(entry['Date'], '%Y%m%d').date())
             db_entry = RaceEntry(
                 date=datetime.datetime.strptime(
                     entry['Date'], '%Y%m%d').date(),
@@ -78,6 +80,22 @@ def create():
                 deaths_nonhispanic=entry['Deaths_Ethnicity_NonHispanic'],
             )
             db.session.add(db_entry)
+
+        download = s.get(STATE_DATA_CSV_URL, stream=True)
+
+        decoded_content = download.content.decode('utf-8')
+
+        reader = csv.DictReader(decoded_content.splitlines(), delimiter=',')
+        for entry in reader:
+            db_entry = StateEntry(
+                population=entry['population'],
+                latitude=entry['latitude'],
+                longitude=entry['longitude'],
+                state_abbreviation=entry['state'],
+                state_name=entry['name'],
+            )
+            db.session.add(db_entry)
+
     db.session.commit()
 
 

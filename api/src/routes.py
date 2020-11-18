@@ -2,7 +2,7 @@ from flask import Flask, url_for, flash, redirect
 import time
 from src import app
 from src import db
-from src.models import RaceEntry
+from src.models import RaceEntry, StateEntry
 from sqlalchemy import func
 from flask import jsonify
 from flask import request
@@ -140,3 +140,31 @@ def get_date_range():
     return jsonify(
         start_date=[e[1] for e in results.all()],
         end_date=[e[0] for e in results.all()])
+
+
+@app.route('/get-states-with-coord-data')
+def get_states_with_coord_data():
+    results = db.session.query(StateEntry.state_name, 
+                               StateEntry.latitude,
+                               StateEntry.longitude)
+    return jsonify(
+        state_name=[e[0] for e in results.all()],
+        latitude=[e[1] for e in results.all()],
+        longitude=[e[2] for e in results.all()])
+
+    
+@app.route('/get-state-population')
+def get_state_population():
+    results = db.session.query(StateEntry.state_name, 
+                               StateEntry.population)
+    return jsonify(
+        state_name=[e[0] for e in results.all()],
+        population=[e[1] for e in results.all()])
+
+@app.route('/get-all-states')
+def get_states():
+    results = db.session.query(StateEntry.state_name, 
+                               StateEntry.state_abbreviation)
+    return jsonify(
+        state_name=[e[0] for e in results.all()],
+        state_abbreviation=[e[1] for e in results.all()])
