@@ -5,9 +5,10 @@ import { Marker, Popup } from 'react-leaflet';
 
 export interface State {
   name: string;
-  state: string;
+  abbr: string;
   latitude: number;
   longitude: number;
+  population: number;
 }
 
 interface MarkersProps {
@@ -18,14 +19,14 @@ interface MarkersProps {
 const Markers: React.FC<MarkersProps> = ({ data, viewMore }) => {
   return (
     <div>
-      {data.map((obj) => {
+      {data.map((obj: State) => {
         return (
           <Marker
             position={new LatLng(obj.latitude, obj.longitude)}
-            key={obj.state}
+            key={obj.abbr}
           >
             <Popup>
-              <Button variant='contained' onClick={() => viewMore(obj.state)}>
+              <Button variant='contained' onClick={() => viewMore(obj)}>
                 View more about {obj.name}
               </Button>
             </Popup>

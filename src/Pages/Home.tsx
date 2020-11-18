@@ -1,13 +1,13 @@
 //React Imports
 import React, { useEffect, useState, useCallback } from 'react';
 import { csv, DSVRowArray } from 'd3';
-import Markers from '../Components/Markers';
+import Markers, { State } from '../Components/Markers';
 /* @ts-ignore */
 import LineGraph from '../Components/LineGraph';
 import SimpleLineGraph from '../Components/SimpleLineGraph';
 //Material UI Imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Button, Paper, Typography } from '@material-ui/core';
+import { Button, Divider, Paper, Typography } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { LatLng } from 'leaflet';
 // import DateRangePicker from 'react-bootstrap-daterangepicker';
@@ -72,14 +72,21 @@ const HomePage: React.FC = () => {
     startDate,
     endDate,
   });
-  const [selectedState, setSelectedState] = React.useState<String | null>(null);
+  const [selectedState, setSelectedState] = React.useState<State | null>(null);
 
   const getQueryParams = useCallback(() => {
     return `?start_date=${
       dateRange.startDate?.toISOString().split('T')[0]
     }&end_date=${dateRange.endDate?.toISOString().split('T')[0]}`;
   }, [dateRange]);
-
+  useEffect(() => {
+    console.log('Fetching states...');
+    fetch(`/get-states-with-coord-data`).then((res) =>
+      res.json().then((data) => {
+        setFetchedStateData(data);
+      })
+    );
+  }, []);
   useEffect(() => {
     console.log('Fetching data...');
     fetch(`/get-total-cases-by-state${getQueryParams()}`).then((res) =>
@@ -114,22 +121,29 @@ const HomePage: React.FC = () => {
     );
   }, [getQueryParams]);
   useEffect(() => {
+    console.log('Fetching data for states...');
     fetch(
-      `/get-total-cases-by-date-for-state/${selectedState}${getQueryParams()}`
+      `/get-total-cases-by-date-for-state/${
+        selectedState?.abbr
+      }${getQueryParams()}`
     ).then((res) =>
       res.json().then((data) => {
         setDataByState(data);
       })
     );
     fetch(
-      `/get-cases-by-date-and-race-for-state/${selectedState}${getQueryParams()}`
+      `/get-cases-by-date-and-race-for-state/${
+        selectedState?.abbr
+      }${getQueryParams()}`
     ).then((res) =>
       res.json().then((data) => {
         setCasesByRaceForState(data);
       })
     );
     fetch(
-      `/get-deaths-by-date-and-race-for-state/${selectedState}${getQueryParams()}`
+      `/get-deaths-by-date-and-race-for-state/${
+        selectedState?.abbr
+      }${getQueryParams()}`
     ).then((res) =>
       res.json().then((data) => {
         setDeathsByRaceForState(data);
@@ -137,11 +151,6 @@ const HomePage: React.FC = () => {
     );
   }, [getQueryParams, selectedState]);
 
-  if (fetchedStateData == null) {
-    csv(`${process.env.PUBLIC_URL}/state-data.csv`).then((res) => {
-      setFetchedStateData(res);
-    });
-  }
   const classes = useStyles();
   const position: LatLng = new LatLng(41.5, -100.0);
   const toggle = () => {};
@@ -169,6 +178,10 @@ const HomePage: React.FC = () => {
           // ]}
         />
       </div>
+      <Divider variant='fullWidth' style={{ width: '80%', margin: '10px' }} />
+      <Typography variant='h5' style={{ marginTop: '10px' }}>
+        US Overview
+      </Typography>
       <div style={{ width: '100%' }}>
         <LineGraph
           series={[
@@ -311,6 +324,10 @@ const HomePage: React.FC = () => {
           simple={true}
         />
       </div>
+      <Divider variant='fullWidth' style={{ width: '80%', margin: '10px' }} />
+      <Typography variant='h5' style={{ marginTop: '10px' }}>
+        State Specific Info{selectedState ? `: ${selectedState.name}` : ''}
+      </Typography>
       <Paper
         elevation={3}
         style={{
@@ -345,8 +362,7 @@ const HomePage: React.FC = () => {
               {/* @ts-ignore */}
               <Markers
                 data={fetchedStateData}
-                viewMore={(state: String) => {
-                  console.log(state);
+                viewMore={(state: State) => {
                   setSelectedState(state);
                 }}
               />
@@ -356,20 +372,32 @@ const HomePage: React.FC = () => {
       </Paper>
       {selectedState ? (
         <div style={{ width: '100%' }}>
+          <Paper
+            elevation={1}
+            style={{ width: 'fit-content', padding: '10px', margin: 'auto' }}
+          >
+            <Typography
+              variant='h6'
+              color='textPrimary'
+              style={{ margin: '10px' }}
+            >
+              {selectedState.name}'s Population: {selectedState.population}
+            </Typography>
+          </Paper>
           <div style={{ width: '100%' }}>
             <LineGraph
               series={[
                 {
-                  name: `Total Cases To Date in ${selectedState}`,
+                  name: `Total Cases To Date in ${selectedState?.name}`,
                   data: dataByState?.cases ?? [],
                 },
                 {
-                  name: `Total Deaths To Date in ${selectedState}`,
+                  name: `Total Deaths To Date in ${selectedState?.name}`,
                   data: dataByState?.deaths ?? [],
                 },
               ]}
               xaxis={dataByState?.date ?? []}
-              title={`Total Cases and Deaths to Date in ${selectedState}`}
+              title={`Total Cases and Deaths to Date in ${selectedState?.name}`}
             />
           </div>
           <div
@@ -384,46 +412,46 @@ const HomePage: React.FC = () => {
             <SimpleLineGraph
               series={[
                 {
-                  name: `Total White Cases To Date in ${selectedState}`,
+                  name: `Total White Cases To Date in ${selectedState?.name}`,
                   data: casesByRaceForState?.white ?? [],
                 },
                 {
-                  name: `Total African-American Cases To Date in ${selectedState}`,
+                  name: `Total African-American Cases To Date in ${selectedState?.name}`,
                   data: casesByRaceForState?.black ?? [],
                 },
                 {
-                  name: `Total LatinX Cases To Date in ${selectedState}`,
+                  name: `Total LatinX Cases To Date in ${selectedState?.name}`,
                   data: casesByRaceForState?.latino ?? [],
                 },
                 {
-                  name: `Total Multiracial Cases To Date in ${selectedState}`,
+                  name: `Total Multiracial Cases To Date in ${selectedState?.name}`,
                   data: casesByRaceForState?.multi ?? [],
                 },
               ]}
               xaxis={casesByRaceForState?.date ?? []}
-              title={`Breakdown of Total Cases by Race in ${selectedState}`}
+              title={`Breakdown of Total Cases by Race in ${selectedState?.name}`}
             />
             <SimpleLineGraph
               series={[
                 {
-                  name: `Total White Deaths To Date in ${selectedState}`,
+                  name: `Total White Deaths To Date in ${selectedState?.name}`,
                   data: deathsByRaceForState?.white ?? [],
                 },
                 {
-                  name: `Total African-American Deaths To Date in ${selectedState}`,
+                  name: `Total African-American Deaths To Date in ${selectedState?.name}`,
                   data: deathsByRaceForState?.black ?? [],
                 },
                 {
-                  name: `Total LatinX Deaths To Date in ${selectedState}`,
+                  name: `Total LatinX Deaths To Date in ${selectedState?.name}`,
                   data: deathsByRaceForState?.latino ?? [],
                 },
                 {
-                  name: `Total Multiracial Deaths To Date in ${selectedState}`,
+                  name: `Total Multiracial Deaths To Date in ${selectedState?.name}`,
                   data: deathsByRaceForState?.multi ?? [],
                 },
               ]}
               xaxis={deathsByRaceForState?.date ?? []}
-              title={`Breakdown of Total Deaths by Race in ${selectedState}`}
+              title={`Breakdown of Total Deaths by Race in ${selectedState?.name}`}
             />
           </div>
         </div>

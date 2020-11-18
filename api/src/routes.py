@@ -186,11 +186,17 @@ def get_date_range():
 def get_states_with_coord_data():
     results = db.session.query(StateEntry.state_name, 
                                StateEntry.latitude,
-                               StateEntry.longitude)
+                               StateEntry.longitude,
+                               StateEntry.state_abbreviation,
+                               StateEntry.population)
     return jsonify(
-        state_name=[e[0] for e in results.all()],
-        latitude=[e[1] for e in results.all()],
-        longitude=[e[2] for e in results.all()])
+        {
+            "name": e[0],
+            "latitude": e[1],
+            "longitude": e[2],
+            "abbr": e[3],
+            "population": e[4]
+        } for e in results.all())
 
     
 @app.route('/get-state-population')
@@ -200,6 +206,7 @@ def get_state_population():
     return jsonify(
         state_name=[e[0] for e in results.all()],
         population=[e[1] for e in results.all()])
+
 
 @app.route('/get-all-states')
 def get_states():
