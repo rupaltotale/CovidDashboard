@@ -10,18 +10,13 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Button, Divider, Paper, Typography } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { LatLng } from 'leaflet';
-// import DateRangePicker from 'react-bootstrap-daterangepicker';
-// you will need the css that comes with bootstrap@3. if you are using
-// a tool like webpack, you can do the following:
-// import 'bootstrap/dist/css/bootstrap.css';
-// you will also need the css that comes with bootstrap-daterangepicker
-import 'bootstrap-daterangepicker/daterangepicker.css';
 import BarGraph from '../Components/BarGraph';
 import {
   DateRangePicker,
   DateRange,
   DefinedRange,
 } from 'materialui-daterange-picker';
+import { prettifyNumber } from '../Utils/functions';
 
 import { start } from 'repl';
 const useStyles = makeStyles((theme: Theme) => ({
@@ -381,7 +376,8 @@ const HomePage: React.FC = () => {
               color='textPrimary'
               style={{ margin: '10px' }}
             >
-              {selectedState.name}'s Population: {selectedState.population}
+              {selectedState.name}'s Population:{' '}
+              {prettifyNumber(selectedState.population)}
             </Typography>
           </Paper>
           <div style={{ width: '100%' }}>
