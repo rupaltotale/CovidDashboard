@@ -77,7 +77,8 @@ export default class LineGraph extends React.Component {
   render() {
     return (
       <Paper
-        elevation={3}
+        // elevation={3}
+        variant="outlined"
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -86,8 +87,8 @@ export default class LineGraph extends React.Component {
           alignContent: 'center',
           margin: '10px',
           padding: '10px',
-          width: '100%',
-          height: '750px',
+          // width: '100%',
+          // height: '750px',
         }}
       >
         <Typography
@@ -101,8 +102,8 @@ export default class LineGraph extends React.Component {
           options={this.getOptions()}
           series={this.props.series}
           type='line'
-          width='100%'
-          height='80%'
+          // width='100%'
+          // height='80%'
           style={{ width: '100%' }}
         />
       </Paper>

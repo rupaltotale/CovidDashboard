@@ -173,6 +173,9 @@ const HomePage: React.FC = () => {
           // ]}
         />
       </div>
+      <Button variant="contained" color="primary">
+        Primary
+      </Button>
       <Divider variant='fullWidth' style={{ width: '80%', margin: '10px' }} />
       <Typography variant='h5' style={{ marginTop: '10px' }}>
         US Overview

@@ -9,6 +9,43 @@ from flask import request
 import datetime
 
 
+@app.route('/get-data')
+def get_data():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    state = request.args.get('state')
+    results = db.session.query(RaceEntry.date,
+                               func.sum(RaceEntry.cases_total),
+                               func.sum(RaceEntry.cases_white),
+                               func.sum(RaceEntry.cases_black),
+                               func.sum(RaceEntry.cases_latino),
+                               func.sum(RaceEntry.cases_multiracial),
+                               func.sum(RaceEntry.deaths_total),
+                               func.sum(RaceEntry.deaths_white),
+                               func.sum(RaceEntry.deaths_black),
+                               func.sum(RaceEntry.deaths_latino),
+                               func.sum(RaceEntry.deaths_multiracial)
+                               ).group_by(RaceEntry.date).filter(RaceEntry.date >= start_date
+                                                                 ).filter(RaceEntry.date <= end_date)
+    if state != "National":
+        results = results.filter(RaceEntry.state == db.session.query(StateEntry.state_abbreviation
+                                                                     ).filter(StateEntry.state_name == state))
+    return jsonify(
+        date=[e[0] for e in results.all()],
+
+        cases_total=[e[1] for e in results.all()],
+        cases_white=[e[2] for e in results.all()],
+        cases_black=[e[3] for e in results.all()],
+        cases_latino=[e[4] for e in results.all()],
+        cases_multi=[e[5] for e in results.all()],
+
+        deaths_total=[e[6] for e in results.all()],
+        deaths_white=[e[7] for e in results.all()],
+        deaths_black=[e[8] for e in results.all()],
+        deaths_latino=[e[9] for e in results.all()],
+        deaths_multi=[e[10] for e in results.all()])
+
+
 @app.route('/get-total-cases-by-state')
 def get_data_by_state():
     start_date = request.args.get('start_date')
@@ -18,7 +55,8 @@ def get_data_by_state():
                                func.sum(RaceEntry.deaths_total),
                                ).group_by(RaceEntry.state
                                           ).filter(end_date > RaceEntry.date).filter(
-        datetime.datetime.strptime(end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
+        datetime.datetime.strptime(
+            end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
     ).order_by(func.sum(RaceEntry.cases_total).desc()).limit(10)
     return jsonify(
         state=[e[0] for e in results.all()],
@@ -35,7 +73,7 @@ def get_data_by_date():
                                func.sum(RaceEntry.deaths_total),
                                ).group_by(RaceEntry.date
                                           ).filter(RaceEntry.date >= start_date
-                                                                 ).filter(RaceEntry.date <= end_date)
+                                                   ).filter(RaceEntry.date <= end_date)
     return jsonify(
         date=[e[0] for e in results.all()],
         cases=[e[1] for e in results.all()],
@@ -77,6 +115,7 @@ def get_cases_by_date_and_race_for_state(state):
         latino=[e[3] for e in results.all()],
         multi=[e[4] for e in results.all()])
 
+
 @app.route('/get-deaths-by-date-and-race-for-state/<string:state>')
 def get_deaths_by_date_and_race_for_state(state):
     start_date = request.args.get('start_date')
@@ -115,6 +154,7 @@ def get_cases_by_date_and_race():
         latino=[e[3] for e in results.all()],
         multi=[e[4] for e in results.all()])
 
+
 @app.route('/get-cases-by-state-and-race')
 def get_cases_by_state_and_race():
     start_date = request.args.get('start_date')
@@ -125,7 +165,8 @@ def get_cases_by_state_and_race():
                                func.sum(RaceEntry.cases_latino),
                                func.sum(RaceEntry.cases_multiracial)
                                ).group_by(RaceEntry.state).filter(end_date > RaceEntry.date).filter(
-        datetime.datetime.strptime(end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
+        datetime.datetime.strptime(
+            end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
     ).order_by(func.sum(RaceEntry.cases_total).desc()).limit(10)
     return jsonify(
         state=[e[0] for e in results.all()],
@@ -133,6 +174,7 @@ def get_cases_by_state_and_race():
         black=[e[2] for e in results.all()],
         latino=[e[3] for e in results.all()],
         multi=[e[4] for e in results.all()])
+
 
 @app.route('/get-deaths-by-state-and-race')
 def get_deaths_by_state_and_race():
@@ -144,7 +186,8 @@ def get_deaths_by_state_and_race():
                                func.sum(RaceEntry.deaths_latino),
                                func.sum(RaceEntry.deaths_multiracial)
                                ).group_by(RaceEntry.state).filter(end_date > RaceEntry.date).filter(
-        datetime.datetime.strptime(end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
+        datetime.datetime.strptime(
+            end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
     ).order_by(func.sum(RaceEntry.deaths_total).desc()).limit(10)
     return jsonify(
         state=[e[0] for e in results.all()],
@@ -184,7 +227,7 @@ def get_date_range():
 
 @app.route('/get-states-with-coord-data')
 def get_states_with_coord_data():
-    results = db.session.query(StateEntry.state_name, 
+    results = db.session.query(StateEntry.state_name,
                                StateEntry.latitude,
                                StateEntry.longitude,
                                StateEntry.state_abbreviation,
@@ -198,10 +241,10 @@ def get_states_with_coord_data():
             "population": e[4]
         } for e in results.all())
 
-    
+
 @app.route('/get-state-population')
 def get_state_population():
-    results = db.session.query(StateEntry.state_name, 
+    results = db.session.query(StateEntry.state_name,
                                StateEntry.population)
     return jsonify(
         state_name=[e[0] for e in results.all()],
@@ -210,8 +253,10 @@ def get_state_population():
 
 @app.route('/get-all-states')
 def get_states():
-    results = db.session.query(StateEntry.state_name, 
+    results = db.session.query(StateEntry.state_name,
                                StateEntry.state_abbreviation)
     return jsonify(
-        state_name=[e[0] for e in results.all()],
-        state_abbreviation=[e[1] for e in results.all()])
+        {
+            "state_name": e[0],
+            "state_abbreviation": e[1]
+        } for e in results.all())

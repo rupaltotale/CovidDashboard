@@ -8,6 +8,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 
 //Router Imports
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import LandingPage from './Pages/Landing';
 
 const App: React.FC = (props) => {
   return (
@@ -23,7 +24,7 @@ const Routes: React.FC = (props) => {
     <Router>
       <Switch>
         <Route path='/'>
-          <Home />
+          <LandingPage />
         </Route>
       </Switch>
     </Router>
