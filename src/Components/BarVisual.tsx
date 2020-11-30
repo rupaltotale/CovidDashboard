@@ -9,14 +9,14 @@ import {
   InputLabel,
   FormControlLabel,
   Checkbox,
-  Button,
   Switch,
   Divider,
+  Chip,
   Tooltip,
+  ListItemText,
   IconButton,
 } from '@material-ui/core';
 import { DateRange } from 'materialui-daterange-picker';
-import LineGraph from './LineGraph';
 import SimpleLineGraph from './SimpleLineGraph';
 import { Close } from '@material-ui/icons';
 
@@ -45,19 +45,26 @@ const useStyles = makeStyles((theme: any) => ({
   label: {
     marginRight: 5,
   },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: 2,
+  },
 }));
 
-interface VisualProps {
+interface BarVisualProps {
   dateRange: DateRange;
 }
 
-const Visual: React.FC<VisualProps> = ({ dateRange }) => {
+const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
   const classes = useStyles();
 
   const [showing, setShowing] = useState(true);
 
   const [states, setStates] = useState<string[]>([]);
-  const [selectedState, setSelectedState] = useState<string>('National');
+  const [selectedStates, setSelectedStates] = useState<string[]>(['National']);
   const [fetchedCasesByDate, setFetchedCasesByDate] = useState<any>();
   const [plotWeather, setPlotWeather] = useState<boolean>(false);
   const [data, setData] = useState({
@@ -90,8 +97,8 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
       dateRange.startDate?.toISOString().split('T')[0]
     }&end_date=${
       dateRange.endDate?.toISOString().split('T')[0]
-    }&state=${selectedState}`;
-  }, [dateRange, selectedState]);
+    }&state=${selectedStates}`;
+  }, [dateRange, selectedStates]);
 
   const getSeries = useCallback(() => {
     const series = [];
@@ -217,13 +224,35 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
         <Select
           labelId='location-label'
           id='demo-simple-select'
-          value={selectedState}
+          value={selectedStates}
           onChange={(event: any) => {
-            setSelectedState(event.target.value);
+            setSelectedStates(event.target.value);
           }}
+          multiple
+          //@ts-ignore
+          renderValue={(selected: string[]) => (
+            <div className={classes.chips}>
+              {selected.map((value) => (
+                <Chip
+                  key={value}
+                  label={value}
+                  className={classes.chip}
+                  // onDelete={() => {
+                  //   console.log('Testing');
+                  //   setSelectedStates(
+                  //     selectedStates.filter((val) => val !== value)
+                  //   );
+                  // }}
+                />
+              ))}
+            </div>
+          )}
         >
-          {states.map((state) => (
-            <MenuItem value={state}>{state}</MenuItem>
+          {states.map((state, i) => (
+            <MenuItem key={i} value={state}>
+              <Checkbox checked={selectedStates.indexOf(state) > -1} />
+              <ListItemText primary={state} />
+            </MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -300,4 +329,4 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
   );
 };
 
-export default Visual;
+export default BarVisual;

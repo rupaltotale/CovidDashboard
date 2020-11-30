@@ -27,6 +27,7 @@ import { prettifyNumber } from '../Utils/functions';
 import { start } from 'repl';
 import Visual from '../Components/Visual';
 import { Add } from '@material-ui/icons';
+import BarVisual from '../Components/BarVisual';
 
 const useStyles = makeStyles((theme: Theme) => ({
   home: {
@@ -60,6 +61,7 @@ const LandingPage: React.FC = () => {
     endDate,
   });
   const [counter, setCounter] = React.useState<number>(1);
+  const [barCounter, setBarCounter] = React.useState<number>(1);
 
   const classes = useStyles();
   const position: LatLng = new LatLng(41.5, -100.0);
@@ -110,6 +112,29 @@ const LandingPage: React.FC = () => {
       >
         {[...Array(counter)].map((c: number) => (
           <Visual key={c} dateRange={dateRange}></Visual>
+        ))}
+      </div>
+      <Divider variant='fullWidth' style={{ margin: '10px', width: '100%' }} />
+      <Button
+        variant='outlined'
+        color='primary'
+        style={{ marginBottom: 10 }}
+        onClick={() => setBarCounter(barCounter + 1)}
+      >
+        <Add></Add>
+        Add a bar graph
+      </Button>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {[...Array(barCounter)].map((c: number) => (
+          <BarVisual key={c} dateRange={dateRange}></BarVisual>
         ))}
       </div>
     </div>
