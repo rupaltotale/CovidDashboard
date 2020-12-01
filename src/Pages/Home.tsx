@@ -96,6 +96,7 @@ const HomePage: React.FC = () => {
     );
     fetch(`/get-deaths-by-state-and-race${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
+        console.log(data);
         setDeathsByStateAndRace(data);
       })
     );
@@ -173,7 +174,7 @@ const HomePage: React.FC = () => {
           // ]}
         />
       </div>
-      <Button variant="contained" color="primary">
+      <Button variant='contained' color='primary'>
         Primary
       </Button>
       <Divider variant='fullWidth' style={{ width: '80%', margin: '10px' }} />
