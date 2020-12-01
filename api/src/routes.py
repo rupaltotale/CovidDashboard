@@ -52,7 +52,7 @@ def get_data_for_locations():
     end_date = request.args.get('end_date')
     states = request.args.get('states').split(",")
     states_abbrs = db.session.query(StateEntry.state_abbreviation).filter(StateEntry.state_name.in_(states))
-    results = db.session.query(RaceEntry.state,
+    results = db.session.query(RaceEntry.state, StateEntry.population,
                                func.sum(RaceEntry.cases_total),
                                func.sum(RaceEntry.cases_white),
                                func.sum(RaceEntry.cases_black),
@@ -63,7 +63,8 @@ def get_data_for_locations():
                                func.sum(RaceEntry.deaths_black),
                                func.sum(RaceEntry.deaths_latino),
                                func.sum(RaceEntry.deaths_multiracial)
-                               ).group_by(RaceEntry.state
+                               ).filter(StateEntry.state_abbreviation == RaceEntry.state
+                                        ).group_by(RaceEntry.state
                                           ).filter(end_date > RaceEntry.date
                                                    ).filter(datetime.datetime.strptime(
                                                        end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
@@ -72,17 +73,18 @@ def get_data_for_locations():
 
     return jsonify(
         state=[e[0] for e in results.all()],
-        cases_total=[e[1] for e in results.all()],
-        cases_white=[e[2] for e in results.all()],
-        cases_black=[e[3] for e in results.all()],
-        cases_latino=[e[4] for e in results.all()],
-        cases_multi=[e[5] for e in results.all()],
+        population=[e[1] for e in results.all()],
+        cases_total=[e[2] for e in results.all()],
+        cases_white=[e[3] for e in results.all()],
+        cases_black=[e[4] for e in results.all()],
+        cases_latino=[e[5] for e in results.all()],
+        cases_multi=[e[6] for e in results.all()],
 
-        deaths_total=[e[6] for e in results.all()],
-        deaths_white=[e[7] for e in results.all()],
-        deaths_black=[e[8] for e in results.all()],
-        deaths_latino=[e[9] for e in results.all()],
-        deaths_multi=[e[10] for e in results.all()])
+        deaths_total=[e[7] for e in results.all()],
+        deaths_white=[e[8] for e in results.all()],
+        deaths_black=[e[9] for e in results.all()],
+        deaths_latino=[e[10] for e in results.all()],
+        deaths_multi=[e[11] for e in results.all()])
 
 
 @app.route('/get-total-cases-by-state')

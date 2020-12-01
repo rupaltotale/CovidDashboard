@@ -68,7 +68,7 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
     'California',
   ]);
   const [fetchedCasesByDate, setFetchedCasesByDate] = useState<any>();
-  const [plotWeather, setPlotWeather] = useState<boolean>(false);
+  const [plotPopulation, setPlotPopulation] = useState<boolean>(false);
   const [data, setData] = useState({
     totalCases: true,
     totalDeaths: true,
@@ -105,6 +105,12 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
 
   const getSeries = useCallback(() => {
     const series = [];
+    if (plotPopulation) {
+      series.push({
+        name: 'State population',
+        data: fetchedCasesByDate?.population ?? [],
+      });
+    }
     if (data.totalCases) {
       if (race.all) {
         series.push({
@@ -170,7 +176,7 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
       }
     }
     return series;
-  }, [data, race, fetchedCasesByDate]);
+  }, [data, race, fetchedCasesByDate, plotPopulation]);
 
   useEffect(() => {
     let mounted = true;
@@ -290,6 +296,20 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
             />
           );
         })}
+      </div>
+      <div className={classes.formControl}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={plotPopulation}
+              onChange={(event: any) => {
+                setPlotPopulation(event.target.checked);
+              }}
+              name='plotPopulation'
+            />
+          }
+          label='Plot population for each state'
+        />
       </div>
       <div className={classes.formControl}>
         <FormControlLabel
