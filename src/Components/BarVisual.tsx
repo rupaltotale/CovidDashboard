@@ -17,7 +17,7 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { DateRange } from 'materialui-daterange-picker';
-import SimpleLineGraph from './SimpleLineGraph';
+import BarGraph from './BarGraph';
 import { Close } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: any) => ({
@@ -64,7 +64,9 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
   const [showing, setShowing] = useState(true);
 
   const [states, setStates] = useState<string[]>([]);
-  const [selectedStates, setSelectedStates] = useState<string[]>(['National']);
+  const [selectedStates, setSelectedStates] = useState<string[]>([
+    'California',
+  ]);
   const [fetchedCasesByDate, setFetchedCasesByDate] = useState<any>();
   const [plotWeather, setPlotWeather] = useState<boolean>(false);
   const [data, setData] = useState({
@@ -97,7 +99,7 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
       dateRange.startDate?.toISOString().split('T')[0]
     }&end_date=${
       dateRange.endDate?.toISOString().split('T')[0]
-    }&state=${selectedStates}`;
+    }&states=${selectedStates}`;
   }, [dateRange, selectedStates]);
 
   const getSeries = useCallback(() => {
@@ -176,10 +178,8 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
       const json = await res.json();
 
       if (mounted) {
-        const states = json.map((obj: any) => {
-          return obj.state_name;
-        });
-        states.unshift('National');
+        const states = json;
+        // states.unshift('National');
         setStates(states);
       }
     };
@@ -191,7 +191,7 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
 
   useEffect(() => {
     console.log('Fetching data...');
-    fetch(`/get-data${getQueryParams()}`).then((res) =>
+    fetch(`/get-data-for-locations${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         console.log(data);
         setFetchedCasesByDate(data);
@@ -216,14 +216,13 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
         </IconButton>
       </Tooltip>
       <Typography variant='h6' className={classes.label}>
-        Visualize data for a region over time
+        Compare cases and deaths for multiple states
       </Typography>
       <Divider variant='fullWidth' style={{ margin: '10px' }} />
       <FormControl className={classes.formControl}>
-        <InputLabel id='location-label'>Location: </InputLabel>
+        <InputLabel id='location-label'>Locations: </InputLabel>
         <Select
           labelId='location-label'
-          id='demo-simple-select'
           value={selectedStates}
           onChange={(event: any) => {
             setSelectedStates(event.target.value);
@@ -233,27 +232,19 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
           renderValue={(selected: string[]) => (
             <div className={classes.chips}>
               {selected.map((value) => (
-                <Chip
-                  key={value}
-                  label={value}
-                  className={classes.chip}
-                  // onDelete={() => {
-                  //   console.log('Testing');
-                  //   setSelectedStates(
-                  //     selectedStates.filter((val) => val !== value)
-                  //   );
-                  // }}
-                />
+                <Chip key={value} label={value} className={classes.chip} />
               ))}
             </div>
           )}
         >
-          {states.map((state, i) => (
-            <MenuItem key={i} value={state}>
-              <Checkbox checked={selectedStates.indexOf(state) > -1} />
-              <ListItemText primary={state} />
-            </MenuItem>
-          ))}
+          {states.map((state, i) => {
+            return (
+              <MenuItem key={i} value={state}>
+                <Checkbox checked={selectedStates.indexOf(state) > -1} />
+                <ListItemText primary={state} />
+              </MenuItem>
+            );
+          })}
         </Select>
       </FormControl>
       {/* @ts-ignore */}
@@ -299,30 +290,17 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
           );
         })}
       </div>
-      <div className={classes.formControl}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={plotWeather}
-              onChange={(event: any) => {
-                setPlotWeather(event.target.checked);
-              }}
-              name='plotWeather'
-            />
-          }
-          label='Plot weather over time for selected location'
-        />
-      </div>
       {/* <Button variant='outlined' color='primary' style={{ margin: 10 }}>
         Refresh graph
       </Button> */}
 
       <Divider variant='fullWidth' style={{ margin: '10px' }} />
       <div style={{ width: '100%' }}>
-        <SimpleLineGraph
+        <BarGraph
           series={getSeries()}
-          xaxis={fetchedCasesByDate?.date ?? []}
-          title='Total Cases and Deaths to Date'
+          xaxis={fetchedCasesByDate?.state ?? []}
+          title='Breakdown of Total Cases and Deaths by State'
+          simple={true}
         />
       </div>
     </Paper>

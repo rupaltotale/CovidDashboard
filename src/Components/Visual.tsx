@@ -169,9 +169,7 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
       const json = await res.json();
 
       if (mounted) {
-        const states = json.map((obj: any) => {
-          return obj.state_name;
-        });
+        const states = json;
         states.unshift('National');
         setStates(states);
       }
