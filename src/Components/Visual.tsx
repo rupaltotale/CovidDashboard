@@ -100,7 +100,7 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
     const series = [];
     if (plotWeather) {
       series.push({
-        name: 'Weather',
+        name: 'Weather (°C)',
         data:
           fetchedCasesByDate?.deaths_multi.map((x: any) =>
             getRandomArbitrary(13, 16)
