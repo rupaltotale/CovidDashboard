@@ -92,7 +92,8 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
     latino: 'LatinX',
     multiracial: 'Multiracial',
   };
-  const stateMapping = {};
+
+  const [scaleGraph, setScaleGraph] = useState<boolean>(true);
 
   const getQueryParams = useCallback(() => {
     return `?start_date=${
@@ -290,6 +291,20 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
           );
         })}
       </div>
+      <div className={classes.formControl}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={scaleGraph}
+              onChange={(event: any) => {
+                setScaleGraph(event.target.checked);
+              }}
+              name='scaleGraph'
+            />
+          }
+          label='Scale Graph'
+        />
+      </div>
       {/* <Button variant='outlined' color='primary' style={{ margin: 10 }}>
         Refresh graph
       </Button> */}
@@ -300,7 +315,7 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
           series={getSeries()}
           xaxis={fetchedCasesByDate?.state ?? []}
           title='Breakdown of Total Cases and Deaths by State'
-          simple={true}
+          simple={!scaleGraph}
         />
       </div>
     </Paper>

@@ -4,21 +4,19 @@ import Chart from 'react-apexcharts';
 import { prettifyNumber } from '../Utils/functions';
 
 export default class LineGraph extends React.Component {
-  getOptions() {
-    const defaultLabels = {
-      formatter: (value) => prettifyNumber(value),
-    };
+  getSimpleOptions() {
     return {
       chart: {
         id: 'basic-bar',
       },
       xaxis: {
         categories: this.props.xaxis,
-        // type: 'datetime',
       },
-      // markers: {
-      //   size: 1,
-      // },
+      yaxis: {
+        labels: {
+          formatter: (value) => prettifyNumber(value),
+        },
+      },
       markers: {
         size: [1, 1],
       },
@@ -27,6 +25,14 @@ export default class LineGraph extends React.Component {
           formatter: (value) => prettifyNumber(value),
         },
       },
+    };
+  }
+  getOptions() {
+    const defaultLabels = {
+      formatter: (value) => prettifyNumber(value),
+    };
+    return {
+      ...this.getSimpleOptions(),
       yaxis: [
         {
           axisTicks: {
@@ -99,10 +105,10 @@ export default class LineGraph extends React.Component {
           {this.props.title}
         </Typography>
         <Chart
-          options={this.getOptions()}
+          options={this.props.simple ? this.getSimpleOptions() : this.getOptions()}
           series={this.props.series}
           type='line'
-          // width='100%'
+          width='1000px'
           // height='80%'
           style={{ width: '100%' }}
         />

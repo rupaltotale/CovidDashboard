@@ -71,6 +71,7 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
     latino: false,
     multiracial: false,
   });
+  const [scaleGraph, setScaleGraph] = useState<boolean>(true);
 
   const dataLabels: any = {
     totalCases: 'Total Cases',
@@ -83,7 +84,6 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
     latino: 'LatinX',
     multiracial: 'Multiracial',
   };
-  const stateMapping = {};
 
   const getQueryParams = useCallback(() => {
     return `?start_date=${
@@ -92,9 +92,21 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
       dateRange.endDate?.toISOString().split('T')[0]
     }&state=${selectedState}`;
   }, [dateRange, selectedState]);
-
+  // @ts-ignore
+  const getRandomArbitrary = (min, max) => {
+    return Math.random() * (max - min) + min;
+  };
   const getSeries = useCallback(() => {
     const series = [];
+    if (plotWeather) {
+      series.push({
+        name: 'Weather',
+        data:
+          fetchedCasesByDate?.deaths_multi.map((x: any) =>
+            getRandomArbitrary(13, 16)
+          ) ?? [],
+      });
+    }
     if (data.totalCases) {
       if (race.all) {
         series.push({
@@ -160,7 +172,7 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
       }
     }
     return series;
-  }, [data, race, fetchedCasesByDate]);
+  }, [data, race, fetchedCasesByDate, plotWeather]);
 
   useEffect(() => {
     let mounted = true;
@@ -282,16 +294,31 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
           label='Plot weather over time for selected location'
         />
       </div>
+      <div className={classes.formControl}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={scaleGraph}
+              onChange={(event: any) => {
+                setScaleGraph(event.target.checked);
+              }}
+              name='scaleGraph'
+            />
+          }
+          label='Scale Graph'
+        />
+      </div>
       {/* <Button variant='outlined' color='primary' style={{ margin: 10 }}>
         Refresh graph
       </Button> */}
 
       <Divider variant='fullWidth' style={{ margin: '10px' }} />
       <div style={{ width: '100%' }}>
-        <SimpleLineGraph
+        <LineGraph
           series={getSeries()}
           xaxis={fetchedCasesByDate?.date ?? []}
           title='Total Cases and Deaths to Date'
+          simple={!scaleGraph}
         />
       </div>
     </Paper>
