@@ -51,7 +51,8 @@ def get_data_for_locations():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     states = request.args.get('states').split(",")
-    states_abbrs = db.session.query(StateEntry.state_abbreviation).filter(StateEntry.state_name.in_(states))
+    states_abbrs = db.session.query(StateEntry.state_abbreviation).filter(
+        StateEntry.state_name.in_(states))
     results = db.session.query(RaceEntry.state, StateEntry.population,
                                func.sum(RaceEntry.cases_total),
                                func.sum(RaceEntry.cases_white),
@@ -65,9 +66,9 @@ def get_data_for_locations():
                                func.sum(RaceEntry.deaths_multiracial)
                                ).filter(StateEntry.state_abbreviation == RaceEntry.state
                                         ).group_by(RaceEntry.state
-                                          ).filter(end_date > RaceEntry.date
-                                                   ).filter(datetime.datetime.strptime(
-                                                       end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
+                                                   ).filter(end_date > RaceEntry.date
+                                                            ).filter(datetime.datetime.strptime(
+                                                                end_date, '%Y-%m-%d').date() - datetime.timedelta(days=7) < RaceEntry.date
     ).filter(RaceEntry.state.in_(states_abbrs)
              ).order_by(func.sum(RaceEntry.deaths_total).desc())
 
@@ -297,9 +298,19 @@ def get_states():
     results = db.session.query(StateEntry.state_name)
     return jsonify(e[0] for e in results.all())
 
+
 @app.route('/get-all-states-mapping')
 def get_states_mapping():
-    results = db.session.query(StateEntry.state_name, StateEntry.state_abbreviation)
+    results = db.session.query(
+        StateEntry.state_name, StateEntry.state_abbreviation)
     return jsonify(
         state_name=[e[0] for e in results.all()],
         state_abbreviation=[e[1] for e in results.all()])
+
+
+@app.route('/get-most-populous-city-given-state/<string:state>')
+def get_most_populous_cities_by_state(state):
+    results = db.session.query(StateEntry.city).filter(
+        state == StateEntry.state_name)
+    return jsonify(
+        state_name=[e[0] for e in results.all()])

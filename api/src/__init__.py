@@ -93,6 +93,7 @@ def create():
                 longitude=entry['longitude'],
                 state_abbreviation=entry['state'],
                 state_name=entry['name'],
+                city=entry['city']
             )
             db.session.add(db_entry)
 
