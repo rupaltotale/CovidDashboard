@@ -34,6 +34,7 @@ class StateEntry(db.Model):
     population = db.Column(db.Integer, nullable=False)
     state_abbreviation = db.Column(db.String, nullable=False)
     state_name = db.Column(db.String, nullable=False)
+    city = db.Column(db.String, nullable=False)
 
 
 class RaceEntry(db.Model):

@@ -207,11 +207,17 @@ def get_state_population():
         state_name=[e[0] for e in results.all()],
         population=[e[1] for e in results.all()])
 
-
 @app.route('/get-all-states')
 def get_states():
-    results = db.session.query(StateEntry.state_name, 
+    results = db.session.query(StateEntry.state_name,
                                StateEntry.state_abbreviation)
     return jsonify(
         state_name=[e[0] for e in results.all()],
         state_abbreviation=[e[1] for e in results.all()])
+
+@app.route('/get-most-populous-city-given-state/<string:state>')
+def get_most_populous_cities_by_state(state):
+    results = db.session.query(StateEntry.city).filter(state == StateEntry.state_name)
+    return jsonify(
+        state_name=[e[0] for e in results.all()])
+

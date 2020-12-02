@@ -18,7 +18,7 @@ import {
 } from 'materialui-daterange-picker';
 import { prettifyNumber } from '../Utils/functions';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
-import {cities, most_populous_cities_by_state} from '../Utils/cities';
+import {cities, most_populous_cities_by_state, states} from '../Utils/cities';
 
 
 import { start } from 'repl';
@@ -73,6 +73,9 @@ const HomePage: React.FC = () => {
     });
     const [selectedState, setSelectedState] = React.useState<State | null>(null);
     const [locationValue, setLocationValue] = useState(initialState);
+    const [stateSelectedFromDropdown, setStateSelectedFromDropdown] = useState(initialState);
+    const [statesList, setStatesList] = useState(initialState);
+
 
     const getQueryParams = useCallback(() => {
         return `?start_date=${dateRange.startDate?.toISOString().split('T')[0]
@@ -129,7 +132,7 @@ const HomePage: React.FC = () => {
             res.json().then((data) => {
                 var dates = [];
                 var temperatures = [];
-                for (var i = 0; i < data.data.weather.length; i++) {
+                for (var i = 0; i < data.data.weather?.length; i++) {
                     dates.push(data.data.weather[i].date);
                     temperatures.push(data.data.weather[i].maxtempF);
                 }
@@ -165,23 +168,43 @@ const HomePage: React.FC = () => {
                 setDeathsByRaceForState(data);
             })
         );
-    }, [getQueryParams, selectedState]);
+    }, [getQueryParams, selectedState, stateSelectedFromDropdown]);
+    useEffect(() => {
+        console.log("here we are...");
+        fetch(
+            `/get-all-states`
+        ).then((res) =>
+            res.json().then((data) => {
+                setStatesList(data.state_name);
+            })
+        );
+        fetch(
+            `/get-most-populous-city-given-state/${stateSelectedFromDropdown}`
+        ).then((res) =>
+            res.json().then((data) => {
+                console.log("HERE we are", data)
+                setLocationValue(String(data.state_name[0]).split(" ").join("+"));
+            })
+        );
+    }, [stateSelectedFromDropdown]);
 
     const classes = useStyles();
     const position: LatLng = new LatLng(41.5, -100.0);
     const toggle = () => { };
     let menuItems1000Cities = [];
-    let menuItemsMostPopulousCitiesByState = [];
 
     console.log("UM fetchedTemperatureByDate:", fetchedTemperatureByDate);
+
+    let menuItemsMostPopulousCitiesByState = [];
 
     for (var i = 0; i < cities.length; i++) {
         menuItems1000Cities.push(<MenuItem value={cities[i]}>{cities[i]}</MenuItem>);
     }  
 
-    for (var i = 0; i < most_populous_cities_by_state.length; i++) {
-        menuItemsMostPopulousCitiesByState.push(<MenuItem value={most_populous_cities_by_state[i]}>{most_populous_cities_by_state[i]}</MenuItem>);
+    for (var i = 0; i < statesList?.length; i++) {
+        menuItemsMostPopulousCitiesByState.push(<MenuItem value={statesList[i]}>{statesList[i]}</MenuItem>);
     }  
+
     
     console.log("locvalue", locationValue);
 
@@ -223,8 +246,8 @@ const HomePage: React.FC = () => {
                <Select labelId="label" id="cities" onChange={(city) => setLocationValue(String(city.target.value).split(" ").join("+"))}>
                    {menuItems1000Cities}
                 </Select>
-                <InputLabel id="label">or Choose From Most Populous Cities By State</InputLabel>
-                <Select labelId="label" id="cities" onChange={(city) => setLocationValue(String(city.target.value).split(" ").join("+"))}>
+                <InputLabel id="label">or Choose State</InputLabel>
+                <Select labelId="label" id="states" onChange={(state) => setStateSelectedFromDropdown(state.target.value)}>
                    {menuItemsMostPopulousCitiesByState}
                 </Select>
             </div>
