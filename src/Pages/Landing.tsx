@@ -53,7 +53,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const LandingPage: React.FC = () => {
   const startDate = new Date('04-12-2020');
-  const endDate = new Date();
+  // This should ideally be current date but the latest data in our database is till 11-10-2020.
+  // We could not fetch new data since the formatting has changed considerably - will work on adapting to the
+  // new formatting over winter break.
+  const endDate = new Date('11-10-2020');
 
   const [open, setOpen] = React.useState(true);
   const [dateRange, setDateRange] = React.useState<DateRange>({
@@ -85,9 +88,6 @@ const LandingPage: React.FC = () => {
           toggle={toggle}
           onChange={(range) => setDateRange(range)}
           initialDateRange={dateRange}
-          // definedRanges={[
-          //   { label: 'All Time', startDate: startDate, endDate: endDate },
-          // ]}
         />
       </div>
 

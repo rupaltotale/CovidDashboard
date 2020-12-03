@@ -32,6 +32,7 @@ app.json_encoder = CustomJSONEncoder
 from src import routes
 from src.models import RaceEntry, StateEntry
 
+
 @click.command(name='create')
 @with_appcontext
 def create():
@@ -40,7 +41,7 @@ def create():
     db.drop_all()
     db.create_all()
 
-    CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_xmYt4ACPDZCDJcY12kCiMiH0ODyx3E1ZvgOHB8ae1tRcjXbs_yWBOA4j4uoCEADVfC1PS2jYO68B/pub?gid=43720681&single=true&output=csv'
+    CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS3Eun3KmBosDx5HpvnPXvbwqowUSqTVdxZOasfWCi3maJGyt05Z3nQHl4I4TYICLUnAuAHhcmIsNL0/pub?gid=2085785523&single=true&output=csv'
     STATE_DATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/1VnQ6m8i78LE5wi56M2YyKAHQm-13zKIvQ5MvYMasSmY/export?format=csv&gid=784984593'
 
     with requests.Session() as s:

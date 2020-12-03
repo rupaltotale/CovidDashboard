@@ -97,7 +97,6 @@ const HomePage: React.FC = () => {
     }&enddate=${dateRange.endDate?.toISOString().split('T')[0]}`;
   }, [locationValue, dateRange]);
   useEffect(() => {
-    console.log('Fetching states...');
     fetch(`/get-states-with-coord-data`).then((res) =>
       res.json().then((data) => {
         setFetchedStateData(data);
@@ -105,7 +104,6 @@ const HomePage: React.FC = () => {
     );
   }, []);
   useEffect(() => {
-    console.log('Fetching data...');
     fetch(`/get-total-cases-by-state${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
         setFetchedCasesByState(data);
@@ -138,7 +136,6 @@ const HomePage: React.FC = () => {
     );
   }, [getQueryParams]);
   useEffect(() => {
-    console.log('fetching weather data...');
     fetch(
       `http://api.worldweatheronline.com/premium/v1/past-weather.ashx${getQueryParams2()}&format=json`
     ).then((res) =>
@@ -150,13 +147,11 @@ const HomePage: React.FC = () => {
           temperatures.push(data.data.weather[i].maxtempF);
         }
         var twoLists = { dates: dates, temperatures: temperatures };
-        console.log('YAY', twoLists);
         setFetchedTemperatureByDate(twoLists);
       })
     );
   }, [getQueryParams2]);
   useEffect(() => {
-    console.log('Fetching data for states...');
     fetch(
       `/get-total-cases-by-date-for-state/${
         selectedState?.abbr
@@ -186,7 +181,6 @@ const HomePage: React.FC = () => {
     );
   }, [getQueryParams, selectedState, stateSelectedFromDropdown]);
   useEffect(() => {
-    console.log('here we are...');
     fetch(`/get-all-states`).then((res) =>
       res.json().then((data) => {
         setStatesList(data.state_name);
@@ -196,7 +190,6 @@ const HomePage: React.FC = () => {
       `/get-most-populous-city-given-state/${stateSelectedFromDropdown}`
     ).then((res) =>
       res.json().then((data) => {
-        console.log('HERE we are', data);
         setLocationValue(String(data.state_name[0]).split(' ').join('+'));
       })
     );
@@ -206,8 +199,6 @@ const HomePage: React.FC = () => {
   const position: LatLng = new LatLng(41.5, -100.0);
   const toggle = () => {};
   let menuItems1000Cities = [];
-
-  console.log('UM fetchedTemperatureByDate:', fetchedTemperatureByDate);
 
   let menuItemsMostPopulousCitiesByState = [];
 
@@ -222,8 +213,6 @@ const HomePage: React.FC = () => {
       <MenuItem value={statesList[i]}>{statesList[i]}</MenuItem>
     );
   }
-
-  console.log('locvalue', locationValue);
 
   return (
     <div className={classes.home}>

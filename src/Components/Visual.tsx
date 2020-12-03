@@ -193,10 +193,8 @@ const Visual: React.FC<VisualProps> = ({ dateRange }) => {
   }, []);
 
   useEffect(() => {
-    console.log('Fetching data...');
     fetch(`/get-data${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
-        console.log(data);
         setFetchedCasesByDate(data);
       })
     );

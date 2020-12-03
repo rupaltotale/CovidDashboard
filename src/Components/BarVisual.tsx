@@ -197,10 +197,8 @@ const BarVisual: React.FC<BarVisualProps> = ({ dateRange }) => {
   }, []);
 
   useEffect(() => {
-    console.log('Fetching data...');
     fetch(`/get-data-for-locations${getQueryParams()}`).then((res) =>
       res.json().then((data) => {
-        console.log(data);
         setFetchedCasesByDate(data);
       })
     );
