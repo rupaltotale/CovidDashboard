@@ -272,7 +272,7 @@ const HomePage: React.FC = () => {
         US Overview
       </Typography>
       <div style={{ width: '100%' }}>
-        <LineGraph
+        <SimpleLineGraph
           series={[
             {
               name: 'Temperature (degrees Fahrenheit)',
