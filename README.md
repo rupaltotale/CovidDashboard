@@ -11,10 +11,10 @@ To see the graphs, the flask app must be started
 
 ## Running the flask app (backend)
 
+- Navigate to the api: `cd api`
 - Create a virtual environment using `python3 -m venv venv`
 - Activate the virtual environment using `source venv/bin/activate`
-- Install the needed packages using pip/pip3: `pip install flask python-dotenv Flask-SQLAlchemy click`
-- The following packages may also be needed: `pip install requests SQLAlchemy urllib3`
+- Install the needed packages using pip/pip3: `pip install flask python-dotenv Flask-SQLAlchemy click requests SQLAlchemy urllib3`
 - To seed the database with the latest data, run `flask create`
 - To start the flask app, run `flask run`
 
